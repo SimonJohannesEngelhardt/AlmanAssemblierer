@@ -44,10 +44,8 @@ public class PrettyPrinter implements Visitor {
 
     @Override
     public void visit(ReturnStatement returnStatement) {
-        write(indent);
         write("return ");
         returnStatement.expr.welcome(this);
-        write(";");
     }
 
     @Override
@@ -84,7 +82,6 @@ public class PrettyPrinter implements Visitor {
             write(" = ");
             variableDecl.statement.welcome(this);
         }
-        write(";");
     }
 
     @Override
@@ -98,14 +95,15 @@ public class PrettyPrinter implements Visitor {
     public void visit(Block block) {
         indent += "  ";
         for (var statement : block.statements) {
+            write(indent);
             statement.welcome(this);
+            write(";");
         }
         indent = indent.substring(0, indent.length() - 2);
     }
 
     @Override
     public void visit(FunctionCall functionCall) {
-        write(indent);
         write(functionCall.functionName);
         write("(");
         var first = true;
@@ -114,12 +112,11 @@ public class PrettyPrinter implements Visitor {
             else write(", ");
             arg.welcome(this);
         }
-        write(");");
+        write(")");
     }
 
     @Override
     public void visit(IfElseStatement ifElseStatement) {
-        write(indent);
         write("wenn (");
         ifElseStatement.ifCondition.welcome(this);
         write(") {");
@@ -132,7 +129,7 @@ public class PrettyPrinter implements Visitor {
             if (ifElseStatement.elseifBlocks.size() != ifElseStatement.elseifConditions.size()) {
                 throw new IllegalStateException("Mismatch between number of conditions and blocks");
             }
-            
+
             for (int i = 0; i < ifElseStatement.elseifBlocks.size(); i++) {
                 write(" ansonsten wenn (");
                 ifElseStatement.elseifConditions.get(i).welcome(this);
