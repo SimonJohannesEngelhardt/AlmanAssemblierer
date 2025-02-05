@@ -69,7 +69,7 @@ public class BuildTree extends almanBaseListener {
             ctx.result = ctx.expr().getFirst().result;
             ctx.result.attribute.parenthesis = true;
         } else {
-            System.err.println("Unrecognized expression");
+            throw new RuntimeException("Unrecognized expression");
         }
     }
 
@@ -155,6 +155,8 @@ public class BuildTree extends almanBaseListener {
 
     @Override
     public void exitIfElseStatement(almanParser.IfElseStatementContext ctx) {
+        List<almanParser.ExprContext> exprContext = ctx.expr().stream().toList();
+
         AST ifCondition = ctx.expr().getFirst().result;
         ctx.expr().removeFirst();
         Block ifBlock = ctx.block().getFirst().result;
@@ -173,6 +175,7 @@ public class BuildTree extends almanBaseListener {
         if (ctx.ELSE_IF() != null) {
             elseIfConditions = ctx.expr().stream().map(expr -> expr.result).toList();
             elseIfBlocks = ctx.block().stream().map(block -> block.result).toList();
+
         }
 
         ctx.result = new IfElseStatement(
@@ -191,7 +194,7 @@ public class BuildTree extends almanBaseListener {
         ctx.result = new Prog(
                 ctx.getStart().getLine(),
                 ctx.getStart().getCharPositionInLine(),
-                ctx.statement().stream().filter(statement -> statement.varDecl() == null).map(statementContext -> statementContext.varDecl().result).toList(),
+                ctx.statement().stream().filter(statement -> statement.varDecl() != null).map(statementContext -> statementContext.varDecl().result).toList(),
                 ctx.functionDefinition().stream().map(definition -> definition.result).toList(),
                 ctx.statement().stream().map(statement -> statement.result).toList()
         );

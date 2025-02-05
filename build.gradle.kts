@@ -18,6 +18,7 @@ repositories {
 dependencies {
     implementation("org.antlr:antlr4:4.11.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("org.mockito:mockito-core:3.+")
 }
 
 val ENABLE_PREVIEW = "--enable-preview"
@@ -46,7 +47,9 @@ tasks {
         jvmArgs(ENABLE_PREVIEW)
     }
 }
-
+tasks.withType<JavaCompile>().all {
+    options.compilerArgs.add(ENABLE_PREVIEW)
+}
 tasks.named<JavaExec>("run") {
     jvmArgs(ENABLE_PREVIEW)
 }
