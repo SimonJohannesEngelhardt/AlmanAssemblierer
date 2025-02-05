@@ -5,16 +5,18 @@ import com.engelhardt.simon.ast.*;
 }
 
 program returns [AST result]:
-  (functionDefinition | varDecl | statement)*;
+  (functionDefinition | statement)*;
+
+functionDefinition returns [FunctionDefinition result]:
+  FUNCTION_HEAD ID LPAR formalParameters? RPAR COLON ID // fun name (arg1: type1, arg2: type2, ...) : returnType
+  block
+;
 
 varDecl returns [VariableDecl result]:
     ID COLON ID (EQUAL expr)? SEMICOLON // name: string = "100";
 ;
 
-functionDefinition returns [FunctionDefinition result]:
-  FUN ID LPAR formalParameters? RPAR COLON ID // fun name (arg1: type1, arg2: type2, ...) : returnType
-  block
-;
+
 
 formalParameters returns [AST result]:
     formalParameter (COMMA formalParameter)*
@@ -41,13 +43,16 @@ returnStatement returns [ReturnStatement result]:
     ;
 
 ifElseStatement returns [IfElseStatement result]:
-    IF LPAR expr RPAR block (ELSE block)?
+    IF LPAR expr RPAR block
+    (ELSE_IF LPAR expr RPAR block)*
+    (ELSE block)?
     ;
 
 expr returns [AST result]:
     | expr (MULT | DIV) expr
     | expr (PLUS | MINUS) expr
     | expr (IS_EQUAL | NOT_EQUAL | LESS_THAN | GREATER_THAN | GREATER_THAN_EQUAL | LESS_THAN_EQUAL) expr
+    | functionCall
     | zahl
     | ID
     | LPAR expr RPAR
@@ -84,19 +89,22 @@ COMMA: ',';
 SEMICOLON: ';';
 EQUAL: '=';
 
-IF: 'if';
-ELSE: 'else';
-FUN: 'fun';
-RETURN: 'return';
+IF: 'wenn';
+ELSE_IF: 'ansonsten wenn';
+ELSE: 'ansonsten';
+FUNCTION_HEAD: 'definiere';
+RETURN: 'gib zurueck';
 
 ID:
+    VALID_ID_START ID_CHAR*;
+TYPE:
     VALID_ID_START ID_CHAR*;
 
 fragment VALID_ID_START:
  [a-zA-Z];
 
- fragment ID_CHAR:
-   VALID_ID_START|('0'..'9');
+fragment ID_CHAR:
+  VALID_ID_START|('0'..'9');
 
 
 SINGLE_LINE_COMMENT : '//' ~[\r\n]* -> skip;  // Skips text after '//' until the end of the line
