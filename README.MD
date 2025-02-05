@@ -21,3 +21,9 @@ Die 3 steht f√ºr 2^3 = 8, also ist immer eine 2er Potenz gemeint. For example ‚Ä
 until it is a multiple of 8. If the location counter is already a multiple of 8, no change is needed. If the expression
 is omitted then a default value of 0 is used, effectively disabling alignment requirements.
 https://sourceware.org/binutils/docs/as/P2align.html#P2align
+
+
+### Einstiegspunkt?
+- haupt
+- haupteinstiegspunkt
+- einstiegspunkt

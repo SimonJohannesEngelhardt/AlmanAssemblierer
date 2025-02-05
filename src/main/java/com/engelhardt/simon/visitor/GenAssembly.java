@@ -161,7 +161,7 @@ public class GenAssembly implements Visitor {
         var global = globalVars.get(variable.name);
         if (local != null) {
             nl();
-            write(STR."movq\t\{local}(%rsp), %rax");
+            write(STR."movq\t\{local}(%rbp), %rax");
         } else if (global != null) {
             nl();
             write(STR."movq\t_\{global.varName}(%rip), %rax");
@@ -314,12 +314,16 @@ public class GenAssembly implements Visitor {
             });
             out.close();
 
-            out = new FileWriter(STR."\{filename}.c");
-            write("#include <stdlib.h>\n");
-            write("#include <stdio.h>\n");
-            write("#include <string.h>\n");
-            write("#include <strings.h>\n");
-            write(STR."#include \"\{programName}.h");
+            File cFile = new File(STR."\{filename}.c");
+            if (!cFile.isFile()) {
+                out = new FileWriter(cFile);
+                write("#include <stdlib.h>\n");
+                write("#include <stdio.h>\n");
+                write("#include <string.h>\n");
+                write("#include <strings.h>\n");
+                write(STR."#include \"\{programName}.h");
+                out.close();
+            }
 
             out = new FileWriter(STR."\{filename}.s");
         } catch (IOException e) {
@@ -481,6 +485,6 @@ public class GenAssembly implements Visitor {
         }
         varAssignment.expr.welcome(this);
         nl();
-        write(STR."movq\t%rax, \{locationOnStack}(%rsp)");
+        write(STR."movq\t%rax, \{locationOnStack}(%rbp)");
     }
 }
