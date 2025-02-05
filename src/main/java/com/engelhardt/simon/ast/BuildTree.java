@@ -1,7 +1,8 @@
 package com.engelhardt.simon.ast;
 
-import com.engelhardt.simon.antlr.*;
-import com.engelhardt.simon.utils.*;
+import com.engelhardt.simon.antlr.almanBaseListener;
+import com.engelhardt.simon.antlr.almanParser;
+import com.engelhardt.simon.utils.Parameter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,46 @@ public class BuildTree extends almanBaseListener {
                     ctx.expr().get(0).result,
                     ctx.expr().get(1).result,
                     Operator.eq
+            );
+        } else if (ctx.NOT_EQUAL() != null) {
+            ctx.result = new OpExpr(
+                    line,
+                    column,
+                    ctx.expr().get(0).result,
+                    ctx.expr().get(1).result,
+                    Operator.neq
+            );
+        } else if (ctx.LESS_THAN() != null) {
+            ctx.result = new OpExpr(
+                    line,
+                    column,
+                    ctx.expr().get(0).result,
+                    ctx.expr().get(1).result,
+                    Operator.lt
+            );
+        } else if (ctx.LESS_THAN_EQUAL() != null) {
+            ctx.result = new OpExpr(
+                    line,
+                    column,
+                    ctx.expr().get(0).result,
+                    ctx.expr().get(1).result,
+                    Operator.lteq
+            );
+        } else if (ctx.GREATER_THAN() != null) {
+            ctx.result = new OpExpr(
+                    line,
+                    column,
+                    ctx.expr().get(0).result,
+                    ctx.expr().get(1).result,
+                    Operator.gt
+            );
+        } else if (ctx.GREATER_THAN_EQUAL() != null) {
+            ctx.result = new OpExpr(
+                    line,
+                    column,
+                    ctx.expr().get(0).result,
+                    ctx.expr().get(1).result,
+                    Operator.gteq
             );
         } else if (ctx.LPAR() != null && ctx.RPAR() != null) {
             ctx.result = ctx.expr().getFirst().result;

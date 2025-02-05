@@ -6,12 +6,20 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class GenAssembly implements Visitor {
     Writer out;
     String[] registers = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
     Map<String, Integer> env;
     int argsStackSize = 0;
+
+    // Counter for unique labels
+    int next = 0;
+
+    int next() {
+        return next++;
+    }
 
     public GenAssembly(Writer out) {
         this.out = out;
@@ -40,22 +48,83 @@ public class GenAssembly implements Visitor {
     public void visit(OpExpr opExpr) {
         // Code für linke Seite generieren
         opExpr.left.welcome(this);
-        // Ergebnis in %rdx speichern
+        // Ergebnis in %rbx speichern
         nl();
-        write("movq\t%rax, %rdx");
+        write("movq\t%rax, %rbx");
         // Code für rechte Seite generieren
         opExpr.right.welcome(this);
 
         // Ergebnis in %rax speichern
         switch (opExpr.operator) {
             case add -> {
-                System.out.println("add");
                 nl();
-                write("addq\t%rdx, %rax");
+                write("addq\t%rbx, %rax");
             }
             case sub -> {
                 nl();
-                write("subq\t%rdx, %rax");
+                write("subq\t%rbx, %rax");
+            }
+            case mult -> {
+                nl();
+                write("imulq\t%rbx, %rax");
+            }
+            case div -> {
+                nl();
+                write("cqo");
+                nl();
+                write("idivq\t%rbx");
+            }
+            case mod -> {
+                nl();
+                write("cqo");
+                nl();
+                write("idivq\t%rbx");
+                nl();
+                write("movq\t%rdx, %rax");
+            }
+            case eq -> {
+                nl();
+                write("cmpq\t%rbx, %rax");
+                nl();
+                write("sete\t%al");
+            }
+            case neq -> {
+                nl();
+                write("cmpq\t%rbx, %rax");
+                nl();
+                write("setne\t%al");
+            }
+            case lteq -> {
+                nl();
+                write("cmpq\t%rbx, %rax");
+                nl();
+                write("setle\t%al");
+            }
+            case lt -> {
+                nl();
+                write("cmpq\t%rbx, %rax");
+                nl();
+                write("setl\t%al");
+            }
+            case gteq -> {
+                nl();
+                write("cmpq\t%rbx, %rax");
+                nl();
+                write("setge\t%al");
+            }
+            case gt -> {
+                nl();
+                write("cmpq\t%rbx, %rax");
+                nl();
+                write("setg\t%al");
+            }
+            case or -> {
+                nl();
+                write("orq\t%rbx, %rax");
+            }
+            case and -> {
+                nl();
+                write("andq\t%rbx, %rax");
             }
             default -> throw new UnsupportedOperationException("Operator not supported (yet)");
         }
@@ -86,21 +155,17 @@ public class GenAssembly implements Visitor {
     public void visit(FunctionDefinition functionDefinition) {
         nl();
         //.globl  <functionName>
-        write(".globl\t_");
-        write(functionDefinition.name);
+        write(".globl\t");
+        write("_" + functionDefinition.name);
         nl();
-        /*
-        .type <functionName>, @function
-         */
-        /*
-        write(".type\t");
-        write(functionDefinition.name);
-        write(", @function");
-        */
-
+        // .type <functionName>, @function
+        //write(".type\t");
+        //write("_" + functionDefinition.name);
+        //write(", @function");
         // <functionName>:
         write(STR."\n_\{functionDefinition.name}:");
-
+        nl();
+        write("endbr64");
         // Basepointer auf den Stack pushen
         nl();
         write("pushq\t%rbp");
@@ -116,6 +181,12 @@ public class GenAssembly implements Visitor {
         var oldEnv = env;
         env = new HashMap<>();
 
+        /*TODO Tailcall
+        if (funDef.attribute.hasTailCall){
+            write("\n.LStart:");
+        }
+        */
+
         // Den Stackpointer um die Größe des Argument-Stacks reduzieren
         nl();
         write(STR."subq\t$\{argsStackSize}, %rsp");
@@ -128,11 +199,23 @@ public class GenAssembly implements Visitor {
             env.put(functionDefinition.parameters.get(i).name, sp);
             sp = sp - 8;
         }
+
+        // TODO lokale Variblen initialieren
+
+        // Funktionsparameter in die env schreiben
+        sp = 16;
+        for (int i = registers.length; i < functionDefinition.parameters.size(); i++) {
+            env.put(functionDefinition.parameters.get(i).name, sp);
+            sp += 8;
+        }
+
+        // Block generieren
         functionDefinition.block.welcome(this);
 
+        // Umgebung zurücksetzen
         env = oldEnv;
-        write("\n");
 
+        write("\n");
     }
 
     @Override
@@ -170,7 +253,7 @@ public class GenAssembly implements Visitor {
             write("pushq %rax");
         }
         nl();
-        write(STR."call \{functionCall.functionName}");
+        write(STR."call _\{functionCall.functionName}");
     }
 
     @Override

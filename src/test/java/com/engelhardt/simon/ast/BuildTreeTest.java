@@ -1,4 +1,4 @@
-package com.engelhardt.simon.alman_assemblierer.ast;
+package com.engelhardt.simon.ast;
 
 import com.engelhardt.simon.antlr.almanParser;
 import com.engelhardt.simon.ast.*;

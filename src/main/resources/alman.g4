@@ -33,6 +33,7 @@ block returns [Block result]:
 statement returns [AST result]
     : varDecl
     | ifElseStatement
+    //| whileStatement
     | returnStatement
     | functionCall SEMICOLON
     | expr SEMICOLON
@@ -47,8 +48,8 @@ ifElseStatement returns [IfElseStatement result]:
     (ELSE_IF LPAR expr RPAR block)*
     (ELSE block)?
     ;
-
 expr returns [AST result]:
+    expr MOD expr
     | expr (MULT | DIV) expr
     | expr (PLUS | MINUS) expr
     | expr (IS_EQUAL | NOT_EQUAL | LESS_THAN | GREATER_THAN | GREATER_THAN_EQUAL | LESS_THAN_EQUAL) expr
@@ -78,7 +79,6 @@ LESS_THAN: '<';
 GREATER_THAN: '>';
 LESS_THAN_EQUAL: '<=';
 GREATER_THAN_EQUAL: '>=';
-POWER: '^';
 MOD: '%';
 LPAR : '(';
 RPAR : ')';

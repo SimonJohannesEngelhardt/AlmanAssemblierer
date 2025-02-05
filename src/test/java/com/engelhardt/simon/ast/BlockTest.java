@@ -1,9 +1,11 @@
-package com.engelhardt.simon.alman_assemblierer.ast;
+package com.engelhardt.simon.ast;
 
 import com.engelhardt.simon.ast.Block;
 import com.engelhardt.simon.visitor.Visitor;
 import org.junit.jupiter.api.Test;
+
 import static org.mockito.Mockito.*;
+
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,6 +18,7 @@ public class BlockTest {
         assertEquals(1, block.column);
         assertEquals(0, block.statements.size());
     }
+
     @Test
     public void testWelcome() {
         Visitor mockedVisitor = mock(Visitor.class);
