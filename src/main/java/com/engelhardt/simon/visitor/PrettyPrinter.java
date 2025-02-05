@@ -120,7 +120,7 @@ public class PrettyPrinter implements Visitor {
     @Override
     public void visit(IfElseStatement ifElseStatement) {
         write(indent);
-        write("if (");
+        write("wenn (");
         ifElseStatement.ifCondition.welcome(this);
         write(") {");
         indent += "  ";
@@ -132,17 +132,18 @@ public class PrettyPrinter implements Visitor {
             if (ifElseStatement.elseifBlocks.size() != ifElseStatement.elseifConditions.size()) {
                 throw new IllegalStateException("Mismatch between number of conditions and blocks");
             }
-            System.out.println(ifElseStatement.elseifBlocks.size());
-            System.out.println(ifElseStatement.elseifConditions.size());
+            
             for (int i = 0; i < ifElseStatement.elseifBlocks.size(); i++) {
-                write(" else if (");
+                write(" ansonsten wenn (");
                 ifElseStatement.elseifConditions.get(i).welcome(this);
                 write(") {");
                 ifElseStatement.elseifBlocks.get(i).welcome(this);
+                write(indent);
+                write("}");
             }
         }
         if (ifElseStatement.elseBlock != null) {
-            write(" else {");
+            write(" wenn {");
             indent += "  ";
             ifElseStatement.elseBlock.welcome(this);
             indent = indent.substring(0, indent.length() - 2);
