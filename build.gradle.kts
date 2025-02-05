@@ -36,10 +36,6 @@ tasks {
         options.compilerArgs.add("-Xlint:none")
         options.compilerArgs.add("-nowarn")
 
-        // Explicitly setting compiler option --release
-        // is needed when we wouldn't set the
-        // sourceCompatiblity and targetCompatibility
-        // properties of the Java plugin extension.
         options.release.set(22)
     }
 
