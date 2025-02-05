@@ -1,0 +1,6 @@
+fun f1 (x:long, y:long, z:long, a: long) : long {
+    return f2();
+}
+fun f2() : long {
+    return 2000;
+}

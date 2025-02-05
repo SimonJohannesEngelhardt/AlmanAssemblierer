@@ -10,6 +10,7 @@ application {
 group = "com.engelhardt.simon"
 version = "1.0-SNAPSHOT"
 
+
 repositories {
     mavenCentral()
 }
@@ -19,8 +20,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
 }
 
+val ENABLE_PREVIEW = "--enable-preview"
 tasks {
-    val ENABLE_PREVIEW = "--enable-preview"
+
     val generateGrammarSource by registering(JavaExec::class) {
         group = "build"
         description = "Generate ANTLR source files from grammar"
@@ -41,7 +43,12 @@ tasks {
 
     test {
         useJUnitPlatform()
+        jvmArgs(ENABLE_PREVIEW)
     }
+}
+
+tasks.named<JavaExec>("run") {
+    jvmArgs(ENABLE_PREVIEW)
 }
 
 application {
