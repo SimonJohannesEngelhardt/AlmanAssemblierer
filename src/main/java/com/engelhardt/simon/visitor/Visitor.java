@@ -21,7 +21,13 @@ public interface Visitor {
 
     void visit(FunctionCall functionCall);
 
+    void visit(WhileStatement whileStatement);
+
     void visit(IfElseStatement ifElseStatement);
+
+    void visit(ContinueStatement continueStatement);
+
+    void visit(BreakStatement breakStatement);
 
     default void reportError(int line, int column, String message) {
         System.err.println(STR."Error at (\{line},\{column}): \{message}");

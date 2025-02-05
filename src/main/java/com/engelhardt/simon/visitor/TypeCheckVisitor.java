@@ -117,8 +117,28 @@ public class TypeCheckVisitor implements Visitor {
     }
 
     @Override
+    public void visit(WhileStatement whileStatement) {
+
+    }
+
+    @Override
     public void visit(IfElseStatement ifElseStatement) {
 
+    }
+
+    @Override
+    public void visit(ContinueStatement continueStatement) {
+        
+    }
+
+    @Override
+    public void visit(BreakStatement breakStatement) {
+
+    }
+
+    @Override
+    public void reportError(int line, int column, String message) {
+        Visitor.super.reportError(line, column, message);
     }
 
 }

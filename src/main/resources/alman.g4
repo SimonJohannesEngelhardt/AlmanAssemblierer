@@ -13,10 +13,8 @@ functionDefinition returns [FunctionDefinition result]:
 ;
 
 varDecl returns [VariableDecl result]:
-    ID COLON ID (EQUAL expr)? SEMICOLON // name: string = "100";
+    (LET | CONST) ID COLON ID (EQUAL expr)? SEMICOLON
 ;
-
-
 
 formalParameters returns [AST result]:
     formalParameter (COMMA formalParameter)*
@@ -33,7 +31,8 @@ block returns [Block result]:
 statement returns [AST result]
     : varDecl
     | ifElseStatement
-    //| whileStatement
+    | whileStatement
+    | (BREAK | CONTINUE) SEMICOLON
     | returnStatement
     | functionCall SEMICOLON
     | expr SEMICOLON
@@ -48,6 +47,11 @@ ifElseStatement returns [IfElseStatement result]:
     (ELSE_IF LPAR expr RPAR block)*
     (ELSE block)?
     ;
+
+whileStatement returns [WhileStatement result]:
+    WHILE LPAR expr RPAR block
+    ;
+
 expr returns [AST result]:
     expr MOD expr
     | expr (MULT | DIV) expr
@@ -94,6 +98,11 @@ ELSE_IF: 'ansonsten wenn';
 ELSE: 'ansonsten';
 FUNCTION_HEAD: 'definiere';
 RETURN: 'gib zurueck';
+WHILE: 'waehrend'; // oder solange
+BREAK: 'break';
+CONTINUE: 'continue';
+LET: 'lasse';
+CONST: 'konstante';
 
 ID:
     VALID_ID_START ID_CHAR*;

@@ -137,6 +137,12 @@ public class BuildTree extends almanBaseListener {
             ctx.result = ctx.expr().result;
         } else if (ctx.functionCall() != null) {
             ctx.result = ctx.functionCall().result;
+        } else if (ctx.whileStatement() != null) {
+            ctx.result = ctx.whileStatement().result;
+        } else if (ctx.BREAK() != null) {
+            ctx.result = new BreakStatement(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+        } else if (ctx.CONTINUE() != null) {
+            ctx.result = new ContinueStatement(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
         } else {
             System.err.println("Unrecognized statement");
         }
@@ -166,10 +172,12 @@ public class BuildTree extends almanBaseListener {
     public void exitFunctionDefinition(almanParser.FunctionDefinitionContext ctx) {
         if (ctx.FUNCTION_HEAD() != null) {
             var params = new ArrayList<Parameter>();
-            for (var formalParameter : ctx.formalParameters().formalParameter()) {
-                String name = formalParameter.ID().getFirst().getText();
-                String type = formalParameter.ID().getLast().getText();
-                params.add(new Parameter(name, type));
+            if (ctx.formalParameters() != null) {
+                for (var formalParameter : ctx.formalParameters().formalParameter()) {
+                    String name = formalParameter.ID().getFirst().getText();
+                    String type = formalParameter.ID().getLast().getText();
+                    params.add(new Parameter(name, type));
+                }
             }
             ctx.result = new FunctionDefinition(
                     ctx.getStart().getLine(),
@@ -187,10 +195,27 @@ public class BuildTree extends almanBaseListener {
     public void exitVarDecl(almanParser.VarDeclContext ctx) {
         String varName = ctx.ID().getFirst().getText();
         String type = ctx.ID().getLast().getText();
-        if (ctx.expr() != null) {
-            ctx.result = new VariableDecl(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(), varName, type, ctx.expr().result);
-        } else {
-            ctx.result = new VariableDecl(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(), varName, type);
+        if (ctx.CONST() != null) {
+            if (ctx.expr() != null) {
+                throw new RuntimeException("const declaration must have an assignment.");
+            }
+            ctx.result = new VariableDecl(
+                    ctx.getStart().getLine(),
+                    ctx.getStart().getCharPositionInLine(),
+                    varName,
+                    type,
+                    ctx.expr().result,
+                    false
+            );
+        } else if (ctx.LET() != null) {
+            ctx.result = new VariableDecl(
+                    ctx.getStart().getLine(),
+                    ctx.getStart().getCharPositionInLine(),
+                    varName,
+                    type,
+                    ctx.expr() == null ? null : ctx.expr().result,
+                    false
+            );
         }
     }
 
@@ -231,6 +256,16 @@ public class BuildTree extends almanBaseListener {
                 elseIfConditions,
                 elseIfBlocks,
                 elseBlock
+        );
+    }
+
+    @Override
+    public void exitWhileStatement(almanParser.WhileStatementContext ctx) {
+        ctx.result = new WhileStatement(
+                ctx.getStart().getLine(),
+                ctx.getStart().getCharPositionInLine(),
+                ctx.expr().result,
+                ctx.block().result
         );
     }
 

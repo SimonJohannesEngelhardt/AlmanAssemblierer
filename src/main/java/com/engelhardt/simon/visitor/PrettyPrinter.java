@@ -70,6 +70,7 @@ public class PrettyPrinter implements Visitor {
         indent = indent.substring(0, indent.length() - 2);
         write(indent);
         write("}");
+        write("\n");
     }
 
     @Override
@@ -82,11 +83,13 @@ public class PrettyPrinter implements Visitor {
             write(" = ");
             variableDecl.statement.welcome(this);
         }
+        write(";");
     }
 
     @Override
     public void visit(Prog prog) {
         for (var vd : prog.variableDecls) vd.welcome(this);
+        write("\n");
         for (var fd : prog.functionDefinitions) fd.welcome(this);
         for (var s : prog.statements.stream().filter(stat -> !(stat instanceof VariableDecl)).toList()) {
             s.welcome(this);
@@ -95,6 +98,7 @@ public class PrettyPrinter implements Visitor {
 
     @Override
     public void visit(Block block) {
+        if (block == null) return;
         indent += "  ";
         for (var statement : block.statements) {
             write(indent);
@@ -115,6 +119,16 @@ public class PrettyPrinter implements Visitor {
             arg.welcome(this);
         }
         write(")");
+    }
+
+    @Override
+    public void visit(WhileStatement whileStatement) {
+        write("waehrend (");
+        whileStatement.condition.welcome(this);
+        write(") {");
+        whileStatement.block.welcome(this);
+        write(indent);
+        write("}");
     }
 
     @Override
@@ -149,5 +163,20 @@ public class PrettyPrinter implements Visitor {
             write(indent);
             write("}");
         }
+    }
+
+    @Override
+    public void visit(ContinueStatement continueStatement) {
+        write("fortfahren");
+    }
+
+    @Override
+    public void visit(BreakStatement breakStatement) {
+        write("breche");
+    }
+
+    @Override
+    public void reportError(int line, int column, String message) {
+        Visitor.super.reportError(line, column, message);
     }
 }

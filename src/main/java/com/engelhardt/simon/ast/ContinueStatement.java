@@ -2,14 +2,9 @@ package com.engelhardt.simon.ast;
 
 import com.engelhardt.simon.visitor.Visitor;
 
-import java.util.List;
-
-public class Block extends AST {
-    public List<AST> statements;
-
-    public Block(int line, int column, List<AST> statements) {
+public class ContinueStatement extends AST {
+    public ContinueStatement(int line, int column) {
         super(line, column);
-        this.statements = statements;
     }
 
     @Override

@@ -44,3 +44,7 @@ bin/
 
 ### Project Specific Files ###
 antlr/
+
+### Generated Files
+*.s
+*.out

@@ -1,20 +1,29 @@
-x: float = 0; //Not defined yet
 definiere f1 (x:long) : long {
-    1+1;
-    2-2;
     wenn (x==1) {
-        1;
+        gib zurueck 1;
     } ansonsten wenn (x==2) {
-        2;
+        gib zurueck 2;
+    } ansonsten wenn (x == 10000) {
+        gib zurueck 10000;
     } ansonsten {
-        3;
+        gib zurueck 3;
     }
-    gib zurueck 2;
 }
 
+lasse x: long = 10000000;
+lasse y: long = 123;
 definiere f2 (x:long) : long {
     f1(x);
     1+1;
     gib zurueck 2-2;
+}
 
+definiere f3() : long {
+    waehrend (1==1) {
+        5+5;
+        wenn (1 == 1) {
+            break;
+            1+1;
+        }
+    }
 }

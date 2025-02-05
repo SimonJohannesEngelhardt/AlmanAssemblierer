@@ -127,7 +127,22 @@ public class GenJBC implements Visitor {
     }
 
     @Override
+    public void visit(WhileStatement whileStatement) {
+
+    }
+
+    @Override
     public void visit(IfElseStatement ifElseStatement) {
         throw new UnsupportedOperationException("Not supported yet");
+    }
+
+    @Override
+    public void visit(ContinueStatement continueStatement) {
+        
+    }
+
+    @Override
+    public void visit(BreakStatement breakStatement) {
+
     }
 }

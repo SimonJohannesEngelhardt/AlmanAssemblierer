@@ -13,6 +13,7 @@ public sealed interface Type permits Type.PrimitiveType, Type.ReferenceType {
             case "long" -> LONG_TYPE;
             case "boolean" -> BOOLEAN_TYPE;
             case "double" -> DOUBLE_TYPE;
+            case "void" -> VOID_TYPE;
             default -> new ReferenceType(name, packageN);
         };
     }

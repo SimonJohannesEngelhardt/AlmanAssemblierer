@@ -6,15 +6,19 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 public class GenAssembly implements Visitor {
     Writer out;
     String[] registers = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+    Map<String, FunctionDefinition> functions;
+    Map<String, VariableDecl> globalVars;
     Map<String, Integer> env;
     int argsStackSize = 0;
-
     // Counter for unique labels
     int next = 0;
+    private final Stack<String> loopConditionStack = new Stack<>();
+    private final Stack<String> loopEndStack = new Stack<>();
 
     public GenAssembly(Writer out) {
         this.out = out;
@@ -220,6 +224,13 @@ public class GenAssembly implements Visitor {
 
         // Block generieren
         functionDefinition.block.welcome(this);
+        // Falls noch nicht returned wurde, hier returnen
+        nl();
+        write("movq\t%rbp, %rsp");
+        nl();
+        write("popq\t%rbp");
+        nl();
+        write("ret");
 
         // Umgebung zurücksetzen
         env = oldEnv;
@@ -229,12 +240,40 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(VariableDecl variableDecl) {
+        if (!(variableDecl.statement instanceof IntLiteral))
+            throw new RuntimeException("kann keine VarDecl schreiben");
+        write(STR.".globl _\{variableDecl.varName}");
+        write("\n");
+        write(STR."_\{variableDecl.varName}: ");
+        switch (variableDecl.type) {
+            case "long" -> {
+
+                nl();
+                write(STR.".long \{((IntLiteral) variableDecl.statement).n}");
+
+            }
+            default -> {
+                throw new UnsupportedOperationException("Keine weiteren Typen bisher unterstützt.");
+            }
+        }
+        write("\n");
 
     }
 
     @Override
     public void visit(Prog prog) {
-        prog.functionDefinitions.forEach(fd -> fd.welcome(this));
+        globalVars = new HashMap<>();
+        prog.variableDecls.forEach(variableDecl -> {
+            globalVars.put(variableDecl.varName, variableDecl);
+            variableDecl.welcome(this);
+        });
+        write("\n");
+        functions = new HashMap<>();
+        prog.functionDefinitions.forEach(fd -> {
+            functions.put(fd.name, fd);
+            fd.welcome(this);
+        });
+
         try {
             write("\n");
             out.close();
@@ -250,6 +289,9 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(FunctionCall functionCall) {
+        if (functions.get(functionCall.functionName) == null) {
+            reportError(functionCall.line, functionCall.column, "This function call has no function defined.");
+        }
         for (int i = 0; i < Math.min(functionCall.args.size(), registers.length); i++) {
             functionCall.args.get(i).welcome(this);
             nl();
@@ -266,15 +308,41 @@ public class GenAssembly implements Visitor {
     }
 
     @Override
+    public void visit(WhileStatement whileStatement) {
+        var condition = STR.".L\{next()}";
+        var loopEnd = STR.".L\{next()}";
+
+        loopConditionStack.push(condition);
+        loopEndStack.push(loopEnd);
+
+        write(STR."\n\{condition}: ");
+        whileStatement.condition.welcome(this);
+        nl();
+        write("cmpq\t$0, %rax");
+        nl();
+        write(STR."je \{loopEnd}");
+        whileStatement.block.welcome(this);
+        nl();
+        write(STR."jmp \{condition}");
+        write(STR."\n\{loopEnd}: ");
+        nl();
+        write("nop");
+
+
+        loopConditionStack.pop();
+        loopEndStack.pop();
+    }
+
+    @Override
     public void visit(IfElseStatement ifElseStatement) {
         var ifEnd = STR.".L\{next()}";
-        var elseEnd = STR."L\{next()}";
-        var elifEnd = STR."L\{next()}";
+        var elseEnd = STR.".L\{next()}";
+        var elifEnd = STR.".L\{next()}";
         ifElseStatement.ifCondition.welcome(this);
         // In rax steht jetzt das Ergebnis
         // Prüfen, ob null
         nl();
-        write("testq\t%rax, %rax");
+        write("cmpq\t$0, %rax");
         nl();
         write(STR."je \{ifEnd}");
         ifElseStatement.ifBlock.welcome(this);
@@ -300,12 +368,24 @@ public class GenAssembly implements Visitor {
             nl();
             write(STR."jmp \{elseEnd}");
             write(STR."\n\{elifEnd}:");
-            elifEnd = STR."L\{next()}";
+            elifEnd = STR.".L\{next()}";
         }
         if (ifElseStatement.elseBlock != null) {
             ifElseStatement.elseBlock.welcome(this);
         }
 
         write(STR."\n\{elseEnd}:");
+    }
+
+    @Override
+    public void visit(ContinueStatement continueStatement) {
+        nl();
+        write(STR."jmp \{loopConditionStack.peek()}");
+    }
+
+    @Override
+    public void visit(BreakStatement breakStatement) {
+        nl();
+        write(STR."jmp \{loopEndStack.peek()}");
     }
 }
