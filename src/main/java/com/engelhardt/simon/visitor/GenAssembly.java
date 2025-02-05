@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 public class GenAssembly implements Visitor {
     Writer out;
@@ -17,12 +16,12 @@ public class GenAssembly implements Visitor {
     // Counter for unique labels
     int next = 0;
 
-    int next() {
-        return next++;
-    }
-
     public GenAssembly(Writer out) {
         this.out = out;
+    }
+
+    int next() {
+        return next++;
     }
 
     void write(Object o) {
@@ -87,36 +86,48 @@ public class GenAssembly implements Visitor {
                 write("cmpq\t%rbx, %rax");
                 nl();
                 write("sete\t%al");
+                nl();
+                write("movzbq\t%al, %rax");
             }
             case neq -> {
                 nl();
                 write("cmpq\t%rbx, %rax");
                 nl();
                 write("setne\t%al");
+                nl();
+                write("movzbq\t%al, %rax");
             }
             case lteq -> {
                 nl();
                 write("cmpq\t%rbx, %rax");
                 nl();
                 write("setle\t%al");
+                nl();
+                write("movzbq\t%al, %rax");
             }
             case lt -> {
                 nl();
                 write("cmpq\t%rbx, %rax");
                 nl();
                 write("setl\t%al");
+                nl();
+                write("movzbq\t%al, %rax");
             }
             case gteq -> {
                 nl();
                 write("cmpq\t%rbx, %rax");
                 nl();
                 write("setge\t%al");
+                nl();
+                write("movzbq\t%al, %rax");
             }
             case gt -> {
                 nl();
                 write("cmpq\t%rbx, %rax");
                 nl();
                 write("setg\t%al");
+                nl();
+                write("movzbq\t%al, %rax");
             }
             case or -> {
                 nl();
@@ -153,11 +164,9 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(FunctionDefinition functionDefinition) {
-        nl();
         //.globl  <functionName>
         write(".globl\t");
         write("_" + functionDefinition.name);
-        nl();
         // .type <functionName>, @function
         //write(".type\t");
         //write("_" + functionDefinition.name);
@@ -244,20 +253,59 @@ public class GenAssembly implements Visitor {
         for (int i = 0; i < Math.min(functionCall.args.size(), registers.length); i++) {
             functionCall.args.get(i).welcome(this);
             nl();
-            write(STR."movq %rax, \{registers[i]}");
+            write(STR."movq\t%rax, \{registers[i]}");
         }
 
         for (int i = functionCall.args.size() - 1; i >= registers.length; i--) {
             functionCall.args.get(i).welcome(this);
             nl();
-            write("pushq %rax");
+            write("pushq\t%rax");
         }
         nl();
-        write(STR."call _\{functionCall.functionName}");
+        write(STR."call\t_\{functionCall.functionName}");
     }
 
     @Override
     public void visit(IfElseStatement ifElseStatement) {
+        var ifEnd = STR.".L\{next()}";
+        var elseEnd = STR."L\{next()}";
+        var elifEnd = STR."L\{next()}";
+        ifElseStatement.ifCondition.welcome(this);
+        // In rax steht jetzt das Ergebnis
+        // Prüfen, ob null
+        nl();
+        write("testq\t%rax, %rax");
+        nl();
+        write(STR."je \{ifEnd}");
+        ifElseStatement.ifBlock.welcome(this);
 
+        nl();
+        if (ifElseStatement.elseifConditions.isEmpty()) {
+            write(STR."jmp \{elseEnd}");
+        } else {
+            write(STR."jmp \{elifEnd}");
+        }
+        write(STR."\n\{ifEnd}:");
+
+        if (ifElseStatement.elseifConditions.size() != ifElseStatement.elseifBlocks.size()) {
+            throw new RuntimeException("Nicht gleich Anzahl an Conditions und Blöcken");
+        }
+        for (int i = 0; i < ifElseStatement.elseifConditions.size(); i++) {
+            ifElseStatement.elseifConditions.get(i).welcome(this);
+            nl();
+            write("testq\t%rax, %rax");
+            nl();
+            write(STR."je \{elifEnd}");
+            ifElseStatement.elseifBlocks.get(i).welcome(this);
+            nl();
+            write(STR."jmp \{elseEnd}");
+            write(STR."\n\{elifEnd}:");
+            elifEnd = STR."L\{next()}";
+        }
+        if (ifElseStatement.elseBlock != null) {
+            ifElseStatement.elseBlock.welcome(this);
+        }
+
+        write(STR."\n\{elseEnd}:");
     }
 }
