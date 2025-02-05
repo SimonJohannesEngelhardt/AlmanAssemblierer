@@ -88,7 +88,9 @@ public class PrettyPrinter implements Visitor {
     public void visit(Prog prog) {
         for (var vd : prog.variableDecls) vd.welcome(this);
         for (var fd : prog.functionDefinitions) fd.welcome(this);
-        for (var s : prog.statements) s.welcome(this);
+        for (var s : prog.statements.stream().filter(stat -> !(stat instanceof VariableDecl)).toList()) {
+            s.welcome(this);
+        }
     }
 
     @Override
