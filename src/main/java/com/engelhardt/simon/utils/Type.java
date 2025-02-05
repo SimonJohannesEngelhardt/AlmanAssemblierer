@@ -1,7 +1,5 @@
 package com.engelhardt.simon.utils;
 
-import static java.lang.StringTemplate.STR;
-
 public sealed interface Type permits Type.PrimitiveType, Type.ReferenceType {
     Type STRING_TYPE = new ReferenceType("String", "java.lang");
     Type LONG_TYPE = new PrimitiveType("J", "long");
