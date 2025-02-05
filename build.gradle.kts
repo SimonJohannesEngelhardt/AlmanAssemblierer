@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClass = "Main"
+    mainClass = "com.engelhardt.simon.Main"
 }
 
 group = "com.engelhardt.simon"
@@ -46,8 +46,6 @@ tasks {
     test {
         useJUnitPlatform()
     }
-
-    javaexec { jvmArgs(ENABLE_PREVIEW) }
 }
 
 application {
