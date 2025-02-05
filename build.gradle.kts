@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClass = "com.engelhardt.simon.Main"
+    mainClass.set("com.engelhardt.simon.Main")
 }
 
 group = "com.engelhardt.simon"
@@ -22,14 +22,20 @@ dependencies {
 }
 
 val ENABLE_PREVIEW = "--enable-preview"
-tasks {
 
+tasks {
     val generateGrammarSource by registering(JavaExec::class) {
         group = "build"
         description = "Generate ANTLR source files from grammar"
         mainClass.set("org.antlr.v4.Tool")
         classpath = configurations["runtimeClasspath"]
-        args = listOf("-visitor", "-o", "src/main/java/com/engelhardt/simon/antlr", "src/main/resources/alman.g4", "-Xexact-output-dir")
+        args = listOf(
+            "-visitor",
+            "-o",
+            "src/main/java/com/engelhardt/simon/antlr",
+            "src/main/resources/alman.g4",
+            "-Xexact-output-dir"
+        )
     }
 
     compileJava {
@@ -52,8 +58,4 @@ tasks.withType<JavaCompile>().all {
 }
 tasks.named<JavaExec>("run") {
     jvmArgs(ENABLE_PREVIEW)
-}
-
-application {
-    mainClass.set("com.engelhardt.simon.Main")
 }
