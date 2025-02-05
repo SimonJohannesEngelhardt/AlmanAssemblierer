@@ -1,0 +1,9 @@
+wenn (1 == 1) {
+    gib zurueck 1;
+} ansonsten wenn (2 == 2){
+    gib zurueck 2;
+} ansonsten wenn (3 == 3) {
+    gib zurueck 4;
+} ansonsten {
+    gib zurueck 3;
+}
