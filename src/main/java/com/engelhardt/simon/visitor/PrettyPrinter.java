@@ -128,6 +128,19 @@ public class PrettyPrinter implements Visitor {
         indent = indent.substring(0, indent.length() - 2);
         write(indent);
         write("}");
+        if (ifElseStatement.elseifBlocks != null && ifElseStatement.elseifConditions != null) {
+            if (ifElseStatement.elseifBlocks.size() != ifElseStatement.elseifConditions.size()) {
+                throw new IllegalStateException("Mismatch between number of conditions and blocks");
+            }
+            System.out.println(ifElseStatement.elseifBlocks.size());
+            System.out.println(ifElseStatement.elseifConditions.size());
+            for (int i = 0; i < ifElseStatement.elseifBlocks.size(); i++) {
+                write(" else if (");
+                ifElseStatement.elseifConditions.get(i).welcome(this);
+                write(") {");
+                ifElseStatement.elseifBlocks.get(i).welcome(this);
+            }
+        }
         if (ifElseStatement.elseBlock != null) {
             write(" else {");
             indent += "  ";
