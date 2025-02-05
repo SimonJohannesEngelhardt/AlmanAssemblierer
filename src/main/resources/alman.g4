@@ -1,7 +1,8 @@
 grammar alman;
-//@header {
-//import nodes.*;
-//}
+@header {
+package com.engelhardt.simon.antlr;
+import com.engelhardt.simon.ast.*;
+}
 
 program returns [AST result]:
   (functionDefinition | varDecl | statement)*;
