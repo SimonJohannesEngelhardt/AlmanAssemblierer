@@ -57,7 +57,7 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("subq\t%rdx, %rax");
             }
-            default -> throw new UnsupportedOperationException("Operator not supported");
+            default -> throw new UnsupportedOperationException("Operator not supported (yet)");
         }
     }
 
@@ -74,7 +74,7 @@ public class GenAssembly implements Visitor {
         returnStatement.expr.welcome(this);
         // Rücksprung
         nl();
-        write("movq %rbp, %rsp");
+        write("movq\t%rbp, %rsp");
         nl();
         write("popq\t%rbp");
         nl();
@@ -84,10 +84,8 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(FunctionDefinition functionDefinition) {
-        /*
-        .globl  <functionName>
-        */
         nl();
+        //.globl  <functionName>
         write(".globl\t_");
         write(functionDefinition.name);
         nl();
@@ -99,9 +97,8 @@ public class GenAssembly implements Visitor {
         write(functionDefinition.name);
         write(", @function");
         */
-        /*
-        <functionName>:
-         */
+
+        // <functionName>:
         write(STR."\n_\{functionDefinition.name}:");
 
         // Basepointer auf den Stack pushen
@@ -132,6 +129,9 @@ public class GenAssembly implements Visitor {
             sp = sp - 8;
         }
         functionDefinition.block.welcome(this);
+
+        env = oldEnv;
+        write("\n");
 
     }
 
