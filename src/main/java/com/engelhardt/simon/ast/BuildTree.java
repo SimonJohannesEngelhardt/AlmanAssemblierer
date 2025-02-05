@@ -155,27 +155,31 @@ public class BuildTree extends almanBaseListener {
 
     @Override
     public void exitIfElseStatement(almanParser.IfElseStatementContext ctx) {
-        List<almanParser.ExprContext> exprContext = ctx.expr().stream().toList();
+        if (ctx.IF() == null) {
+            throw new RuntimeException("If statement must start with 'wenn'");
+        }
+        // Creates a copy of the list of expressions in a modifiable list
+        List<almanParser.ExprContext> expressions = new ArrayList<>(ctx.expr());
+        List<almanParser.BlockContext> blocks = new ArrayList<>(ctx.block());
 
-        AST ifCondition = ctx.expr().getFirst().result;
-        ctx.expr().removeFirst();
-        Block ifBlock = ctx.block().getFirst().result;
-        ctx.block().removeFirst();
+        AST ifCondition = expressions.getFirst().result;
+        expressions.removeFirst();
+        Block ifBlock = blocks.getFirst().result;
+        blocks.removeFirst();
 
         List<AST> elseIfConditions = null;
         List<Block> elseIfBlocks = null;
         Block elseBlock = null;
 
         if (ctx.ELSE() != null) {
-            elseBlock = ctx.block().getLast().result;
-            ctx.block().removeLast();
+            elseBlock = blocks.getLast().result;
+            blocks.removeLast();
         }
 
 
         if (ctx.ELSE_IF() != null) {
-            elseIfConditions = ctx.expr().stream().map(expr -> expr.result).toList();
-            elseIfBlocks = ctx.block().stream().map(block -> block.result).toList();
-
+            elseIfConditions = expressions.stream().map(expr -> expr.result).toList();
+            elseIfBlocks = blocks.stream().map(block -> block.result).toList();
         }
 
         ctx.result = new IfElseStatement(
