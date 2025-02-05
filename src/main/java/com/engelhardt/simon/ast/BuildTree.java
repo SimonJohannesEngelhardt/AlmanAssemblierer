@@ -4,6 +4,7 @@ import com.engelhardt.simon.antlr.*;
 import com.engelhardt.simon.utils.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class BuildTree extends almanBaseListener {
     @Override
@@ -122,7 +123,7 @@ public class BuildTree extends almanBaseListener {
 
     @Override
     public void exitFunctionDefinition(almanParser.FunctionDefinitionContext ctx) {
-        if (ctx.FUN() != null) {
+        if (ctx.FUNCTION_HEAD() != null) {
             var params = new ArrayList<Parameter>();
             for (var formalParameter : ctx.formalParameters().formalParameter()) {
                 String name = formalParameter.ID().getFirst().getText();
@@ -154,22 +155,35 @@ public class BuildTree extends almanBaseListener {
 
     @Override
     public void exitIfElseStatement(almanParser.IfElseStatementContext ctx) {
-        if (ctx.ELSE() == null) {
-            ctx.result = new IfElseStatement(
-                    ctx.getStart().getLine(),
-                    ctx.getStart().getCharPositionInLine(),
-                    ctx.expr().result,
-                    ctx.block().getFirst().result
-            );
-        } else {
-            ctx.result = new IfElseStatement(
-                    ctx.getStart().getLine(),
-                    ctx.getStart().getCharPositionInLine(),
-                    ctx.expr().result,
-                    ctx.block().getFirst().result,
-                    ctx.block().getLast().result
-            );
+        AST ifCondition = ctx.expr().getFirst().result;
+        ctx.expr().removeFirst();
+        Block ifBlock = ctx.block().getFirst().result;
+        ctx.block().removeFirst();
+
+        List<AST> elseIfConditions = null;
+        List<Block> elseIfBlocks = null;
+        Block elseBlock = null;
+
+        if (ctx.ELSE() != null) {
+            elseBlock = ctx.block().getLast().result;
+            ctx.block().removeLast();
         }
+
+
+        if (ctx.ELSE_IF() != null) {
+            elseIfConditions = ctx.expr().stream().map(expr -> expr.result).toList();
+            elseIfBlocks = ctx.block().stream().map(block -> block.result).toList();
+        }
+
+        ctx.result = new IfElseStatement(
+                ctx.getStart().getLine(),
+                ctx.getStart().getCharPositionInLine(),
+                ifCondition,
+                ifBlock,
+                elseIfConditions,
+                elseIfBlocks,
+                elseBlock
+        );
     }
 
     @Override
@@ -177,7 +191,7 @@ public class BuildTree extends almanBaseListener {
         ctx.result = new Prog(
                 ctx.getStart().getLine(),
                 ctx.getStart().getCharPositionInLine(),
-                ctx.varDecl().stream().map(definition -> definition.result).toList(),
+                ctx.statement().stream().filter(statement -> statement.varDecl() == null).map(statementContext -> statementContext.varDecl().result).toList(),
                 ctx.functionDefinition().stream().map(definition -> definition.result).toList(),
                 ctx.statement().stream().map(statement -> statement.result).toList()
         );
