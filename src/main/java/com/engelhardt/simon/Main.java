@@ -37,7 +37,7 @@ public class Main {
         if (outputType.equals("jbc")) {
             ast.welcome(new GenJBC(className));
         } else if (outputType.equals("asm")) {
-            ast.welcome(new GenAssembly(new FileWriter(className + ".s")));
+            ast.welcome(new GenAssembly(new FileWriter(STR."\{className}.s")));
         }
 
         // Treeansicht generieren

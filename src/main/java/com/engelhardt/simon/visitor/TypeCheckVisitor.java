@@ -74,7 +74,11 @@ public class TypeCheckVisitor implements Visitor {
             reportError(
                     returnStatement.line,
                     returnStatement.column,
-                    STR."Return statement mismatch: \{returnStatement.expr.type.name()} != \{currentFunction.type.name()}"
+                    STR."""
+                    Return statement mismatch:
+                        Function Type: \{currentFunction.type.name()}
+                        Return Type: \{returnStatement.expr.type.name()}
+                    """
             );
         }
         returnStatement.type = currentFunction.type;
