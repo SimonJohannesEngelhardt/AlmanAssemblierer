@@ -2,7 +2,7 @@ package com.engelhardt.simon.alman_assemblierer.ast;
 
 import com.engelhardt.simon.antlr.almanParser;
 import com.engelhardt.simon.ast.*;
-import com.engelhardt.simon.utils.Operator;
+import com.engelhardt.simon.ast.Operator;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,16 +63,11 @@ public class BuildTreeTest {
             var exprCtx2 = mock(almanParser.ExprContext.class);
             when(ctx.expr()).thenReturn(List.of(exprCtx1, exprCtx2));
             switch (operator) {
-                case add ->
-                        when(ctx.PLUS()).thenReturn(mock(TerminalNode.class));
-                case sub ->
-                        when(ctx.MINUS()).thenReturn(mock(TerminalNode.class));
-                case mult ->
-                        when(ctx.MULT()).thenReturn(mock(TerminalNode.class));
-                case div ->
-                        when(ctx.DIV()).thenReturn(mock(TerminalNode.class));
-                case eq ->
-                        when(ctx.IS_EQUAL()).thenReturn(mock(TerminalNode.class));
+                case add -> when(ctx.PLUS()).thenReturn(mock(TerminalNode.class));
+                case sub -> when(ctx.MINUS()).thenReturn(mock(TerminalNode.class));
+                case mult -> when(ctx.MULT()).thenReturn(mock(TerminalNode.class));
+                case div -> when(ctx.DIV()).thenReturn(mock(TerminalNode.class));
+                case eq -> when(ctx.IS_EQUAL()).thenReturn(mock(TerminalNode.class));
             }
             var left = new IntLiteral(1, 0, 42);
             exprCtx1.result = left;

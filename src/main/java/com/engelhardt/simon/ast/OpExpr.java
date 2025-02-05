@@ -1,6 +1,5 @@
 package com.engelhardt.simon.ast;
 
-import com.engelhardt.simon.utils.Operator;
 import com.engelhardt.simon.visitor.Visitor;
 
 

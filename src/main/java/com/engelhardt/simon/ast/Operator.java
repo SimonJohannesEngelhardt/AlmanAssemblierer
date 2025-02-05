@@ -1,4 +1,4 @@
-package com.engelhardt.simon.utils;
+package com.engelhardt.simon.ast;
 
 public enum Operator {
     add("+"), mult("*"), sub("-"), div("/"),
