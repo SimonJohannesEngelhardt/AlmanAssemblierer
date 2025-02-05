@@ -79,9 +79,9 @@ public class PrettyPrinter implements Visitor {
         write(variableDecl.varName);
         write(": ");
         write(variableDecl.type);
-        if (variableDecl.statement != null) {
+        if (variableDecl.expr != null) {
             write(" = ");
-            variableDecl.statement.welcome(this);
+            variableDecl.expr.welcome(this);
         }
         write(";");
     }
@@ -173,6 +173,12 @@ public class PrettyPrinter implements Visitor {
     @Override
     public void visit(BreakStatement breakStatement) {
         write("breche");
+    }
+
+    @Override
+    public void visit(VarAssignment varAssignment) {
+        write(STR."\{varAssignment.varName} = ");
+        varAssignment.expr.welcome(this);
     }
 
     @Override

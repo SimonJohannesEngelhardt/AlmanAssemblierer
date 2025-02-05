@@ -143,6 +143,8 @@ public class BuildTree extends almanBaseListener {
             ctx.result = new BreakStatement(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
         } else if (ctx.CONTINUE() != null) {
             ctx.result = new ContinueStatement(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+        } else if (ctx.varAssignment() != null) {
+            ctx.result = ctx.varAssignment().result;
         } else {
             System.err.println("Unrecognized statement");
         }
@@ -205,7 +207,8 @@ public class BuildTree extends almanBaseListener {
                     varName,
                     type,
                     ctx.expr().result,
-                    false
+                    false,
+                    ctx.parent.parent.getRuleIndex() == almanParser.RULE_program
             );
         } else if (ctx.LET() != null) {
             ctx.result = new VariableDecl(
@@ -214,9 +217,16 @@ public class BuildTree extends almanBaseListener {
                     varName,
                     type,
                     ctx.expr() == null ? null : ctx.expr().result,
-                    false
+                    false,
+                    ctx.parent.parent.getRuleIndex() == almanParser.RULE_program
             );
         }
+    }
+
+    @Override
+    public void exitVarAssignment(almanParser.VarAssignmentContext ctx) {
+        ctx.result = new VarAssignment(ctx.getStart().getLine(),
+                ctx.getStart().getCharPositionInLine(), ctx.ID().getText(), ctx.expr().result);
     }
 
     @Override

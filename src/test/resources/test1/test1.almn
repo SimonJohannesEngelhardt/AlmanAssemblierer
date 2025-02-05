@@ -1,4 +1,5 @@
-definiere f1 (x:long) : long {
+definiere f1 (x1:long, x2:long, x3:long, x4:long, x5:long, x6:long, x7:long, x8:long, x9:long, x10:long, x11:long) : long {
+    lasse x123: long = 1;
     wenn (x==1) {
         gib zurueck 1;
     } ansonsten wenn (x==2) {
@@ -10,20 +11,17 @@ definiere f1 (x:long) : long {
     }
 }
 
-lasse x: long = 10000000;
+lasse x: long = 10 + 10 * 10 / 20;
 lasse y: long = 123;
 definiere f2 (x:long) : long {
-    f1(x);
     1+1;
     gib zurueck 2-2;
 }
 
 definiere f3() : long {
-    waehrend (1==1) {
-        5+5;
-        wenn (1 == 1) {
-            break;
-            1+1;
-        }
+    lasse myVar: long = 100;
+    waehrend (myVar > 1000) {
+        myVar = myVar + 1;
     }
+    gib zurueck myVar;
 }

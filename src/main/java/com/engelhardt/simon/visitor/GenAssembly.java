@@ -1,27 +1,35 @@
 package com.engelhardt.simon.visitor;
 
 import com.engelhardt.simon.ast.*;
+import com.engelhardt.simon.utils.Parameter;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 public class GenAssembly implements Visitor {
+    String filename;
+    String programName;
+    private final Stack<String> loopConditionStack = new Stack<>();
+    private final Stack<String> loopEndStack = new Stack<>();
     Writer out;
     String[] registers = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
     Map<String, FunctionDefinition> functions;
     Map<String, VariableDecl> globalVars;
     Map<String, Integer> env;
+    int sp;
     int argsStackSize = 0;
     // Counter for unique labels
     int next = 0;
-    private final Stack<String> loopConditionStack = new Stack<>();
-    private final Stack<String> loopEndStack = new Stack<>();
 
-    public GenAssembly(Writer out) {
-        this.out = out;
+    public GenAssembly(String programName) {
+        this.filename = programName;
+        this.programName = programName.substring(programName.lastIndexOf(File.separator) + 1);
     }
 
     int next() {
@@ -87,7 +95,7 @@ public class GenAssembly implements Visitor {
             }
             case eq -> {
                 nl();
-                write("cmpq\t%rbx, %rax");
+                write("cmpq\t%rax, %rbx");
                 nl();
                 write("sete\t%al");
                 nl();
@@ -95,7 +103,7 @@ public class GenAssembly implements Visitor {
             }
             case neq -> {
                 nl();
-                write("cmpq\t%rbx, %rax");
+                write("cmpq\t%rax, %rbx");
                 nl();
                 write("setne\t%al");
                 nl();
@@ -103,7 +111,7 @@ public class GenAssembly implements Visitor {
             }
             case lteq -> {
                 nl();
-                write("cmpq\t%rbx, %rax");
+                write("cmpq\t%rax, %rbx");
                 nl();
                 write("setle\t%al");
                 nl();
@@ -111,7 +119,7 @@ public class GenAssembly implements Visitor {
             }
             case lt -> {
                 nl();
-                write("cmpq\t%rbx, %rax");
+                write("cmpq\t%rax, %rbx");
                 nl();
                 write("setl\t%al");
                 nl();
@@ -119,7 +127,7 @@ public class GenAssembly implements Visitor {
             }
             case gteq -> {
                 nl();
-                write("cmpq\t%rbx, %rax");
+                write("cmpq\t%rax, %rbx");
                 nl();
                 write("setge\t%al");
                 nl();
@@ -127,7 +135,7 @@ public class GenAssembly implements Visitor {
             }
             case gt -> {
                 nl();
-                write("cmpq\t%rbx, %rax");
+                write("cmpq\t%rax, %rbx");
                 nl();
                 write("setg\t%al");
                 nl();
@@ -147,9 +155,19 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(Variable variable) {
+        // TODO mit containsKey vorher checken ob die Variable existiert
         // Wert einer Variablen in %rax speichern
-        nl();
-        write(STR."movq\t\{env.get(variable.name)}(%rbp), %rax");
+        var local = env.get(variable.name);
+        var global = globalVars.get(variable.name);
+        if (local != null) {
+            nl();
+            write(STR."movq\t\{local}(%rsp), %rax");
+        } else if (global != null) {
+            nl();
+            write(STR."movq\t_\{global.varName}(%rip), %rax");
+        } else {
+            throw new RuntimeException("Konnte die angegebene Variable nicht finden.");
+        }
     }
 
     @Override
@@ -169,7 +187,7 @@ public class GenAssembly implements Visitor {
     @Override
     public void visit(FunctionDefinition functionDefinition) {
         //.globl  <functionName>
-        write(".globl\t");
+        write("\t.globl\t");
         write("_" + functionDefinition.name);
         // .type <functionName>, @function
         //write(".type\t");
@@ -177,8 +195,6 @@ public class GenAssembly implements Visitor {
         //write(", @function");
         // <functionName>:
         write(STR."\n_\{functionDefinition.name}:");
-        nl();
-        write("endbr64");
         // Basepointer auf den Stack pushen
         nl();
         write("pushq\t%rbp");
@@ -204,22 +220,21 @@ public class GenAssembly implements Visitor {
         nl();
         write(STR."subq\t$\{argsStackSize}, %rsp");
 
-        // Argumente in Register schreiben
-        int sp = -8;
+
+        // übrige Parameter auch in die env schreiben
+        sp = 16;
+        for (int i = registers.length; i < functionDefinition.parameters.size(); i++) {
+            env.put(functionDefinition.parameters.get(i).name, sp);
+            sp += 8;
+        }
+
+        // Argumente von den Registern auf den Stack schreiben und in env merken
+        sp = -8;
         for (int i = 0; i < registerArgs; i++) {
             nl();
             write(STR."movq\t\{registers[i]}, \{sp}(%rbp)");
             env.put(functionDefinition.parameters.get(i).name, sp);
             sp = sp - 8;
-        }
-
-        // TODO lokale Variblen initialieren
-
-        // Funktionsparameter in die env schreiben
-        sp = 16;
-        for (int i = registers.length; i < functionDefinition.parameters.size(); i++) {
-            env.put(functionDefinition.parameters.get(i).name, sp);
-            sp += 8;
         }
 
         // Block generieren
@@ -240,39 +255,91 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(VariableDecl variableDecl) {
-        if (!(variableDecl.statement instanceof IntLiteral))
-            throw new RuntimeException("kann keine VarDecl schreiben");
-        write(STR.".globl _\{variableDecl.varName}");
+        if (!(
+                variableDecl.expr instanceof IntLiteral || variableDecl.expr instanceof OpExpr
+        )) throw new RuntimeException("kann keine VarDecl schreiben");
+
+        if (variableDecl.global) {
+            generateGlobalVarDecl(variableDecl);
+        } else {
+            generateLocalVarDecl(variableDecl);
+        }
+    }
+
+    private void generateGlobalVarDecl(VariableDecl variableDecl) {
+        write(STR."\t.globl _\{variableDecl.varName}");
+        nl();
+        write(".p2align\t3, 0x0"); // Für long müsste es 2 statt 3 sein
         write("\n");
         write(STR."_\{variableDecl.varName}: ");
-        switch (variableDecl.type) {
-            case "long" -> {
-
-                nl();
-                write(STR.".long \{((IntLiteral) variableDecl.statement).n}");
-
-            }
-            default -> {
-                throw new UnsupportedOperationException("Keine weiteren Typen bisher unterstützt.");
+        if (variableDecl.expr instanceof OpExpr) {
+            EvalVisitor eval = new EvalVisitor();
+            variableDecl.expr.welcome(eval);
+            nl();
+            write(STR.".quad \{eval.result}");
+        } else {
+            switch (variableDecl.type) {
+                case "long" -> {
+                    nl();
+                    long value = ((IntLiteral) variableDecl.expr).n;
+                    write(STR.".quad \{value}");
+                    globalVars.put(variableDecl.varName, variableDecl);
+                }
+                default -> {
+                    throw new UnsupportedOperationException("Keine weiteren Typen bisher unterstützt.");
+                }
             }
         }
-        write("\n");
+        write("\n\n");
+    }
 
+    private void generateLocalVarDecl(VariableDecl variableDecl) {
+        variableDecl.expr.welcome(this);
+        nl();
+        write("subq\t$8, %rsp");
+        nl();
+        write(STR."movq\t%rax, \{sp}(%rsp)");
+        env.put(variableDecl.varName, sp);
+        sp -= 8;
     }
 
     @Override
     public void visit(Prog prog) {
+        try {
+            out = new FileWriter(STR."\{filename}.h");
+            prog.functionDefinitions.forEach(fd -> {
+                write(STR."\{fd.resultType} \{fd.name}");
+                writeParameters(fd.parameters);
+                write(";\n");
+            });
+            out.close();
+
+            out = new FileWriter(STR."\{filename}.c");
+            write("#include <stdlib.h>\n");
+            write("#include <stdio.h>\n");
+            write("#include <string.h>\n");
+            write("#include <strings.h>\n");
+            write(STR."#include \"\{programName}.h");
+
+            out = new FileWriter(STR."\{filename}.s");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
         globalVars = new HashMap<>();
         prog.variableDecls.forEach(variableDecl -> {
             globalVars.put(variableDecl.varName, variableDecl);
             variableDecl.welcome(this);
         });
         write("\n");
+
         functions = new HashMap<>();
         prog.functionDefinitions.forEach(fd -> {
             functions.put(fd.name, fd);
             fd.welcome(this);
         });
+
 
         try {
             write("\n");
@@ -280,6 +347,23 @@ public class GenAssembly implements Visitor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void writeParameters(List<Parameter> ps) {
+        write("(");
+        var first = true;
+        for (Parameter p : ps) {
+            if (first) {
+                first = false;
+            } else {
+                write(", ");
+            }
+            write(p.type);
+            write(" ");
+            write(p.name);
+
+        }
+        write(")");
     }
 
     @Override
@@ -387,5 +471,16 @@ public class GenAssembly implements Visitor {
     public void visit(BreakStatement breakStatement) {
         nl();
         write(STR."jmp \{loopEndStack.peek()}");
+    }
+
+    @Override
+    public void visit(VarAssignment varAssignment) {
+        var locationOnStack = env.get(varAssignment.varName);
+        if (locationOnStack == null) {
+            throw new RuntimeException(STR."Konnte \{varAssignment.varName} nicht finden");
+        }
+        varAssignment.expr.welcome(this);
+        nl();
+        write(STR."movq\t%rax, \{locationOnStack}(%rsp)");
     }
 }

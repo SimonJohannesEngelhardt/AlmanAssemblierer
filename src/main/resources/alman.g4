@@ -16,6 +16,10 @@ varDecl returns [VariableDecl result]:
     (LET | CONST) ID COLON ID (EQUAL expr)? SEMICOLON
 ;
 
+varAssignment returns [VarAssignment result]:
+    ID EQUAL expr SEMICOLON
+;
+
 formalParameters returns [AST result]:
     formalParameter (COMMA formalParameter)*
 ;
@@ -30,6 +34,7 @@ block returns [Block result]:
 
 statement returns [AST result]
     : varDecl
+    | varAssignment
     | ifElseStatement
     | whileStatement
     | (BREAK | CONTINUE) SEMICOLON

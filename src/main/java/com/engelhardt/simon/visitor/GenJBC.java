@@ -138,11 +138,16 @@ public class GenJBC implements Visitor {
 
     @Override
     public void visit(ContinueStatement continueStatement) {
-        
+
     }
 
     @Override
     public void visit(BreakStatement breakStatement) {
+
+    }
+
+    @Override
+    public void visit(VarAssignment varAssignment) {
 
     }
 }

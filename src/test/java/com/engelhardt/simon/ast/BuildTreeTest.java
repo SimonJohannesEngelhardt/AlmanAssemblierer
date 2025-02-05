@@ -254,7 +254,7 @@ public class BuildTreeTest {
             when(ctx.getStart()).thenReturn(startToken);
 
             var varDecl = mock(almanParser.VarDeclContext.class);
-            varDecl.result = new VariableDecl(1, 0, "my_var", "int", new IntLiteral(1, 0, 42));
+            varDecl.result = new VariableDecl(1, 0, "my_var", "int", new IntLiteral(1, 0, 42), true, false);
             when(ctx.varDecl()).thenReturn(varDecl);
 
             // Call the method to test
@@ -267,7 +267,7 @@ public class BuildTreeTest {
             assertEquals(0, result.column);
             assertEquals("my_var", result.varName);
             assertEquals("int", result.type);
-            assertEquals(42L, ((IntLiteral) result.statement).n);
+            assertEquals(42L, ((IntLiteral) result.expr).n);
 
         }
 

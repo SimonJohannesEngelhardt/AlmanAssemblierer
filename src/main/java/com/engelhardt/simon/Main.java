@@ -16,6 +16,7 @@ import java.util.Arrays;
 public class Main {
     static boolean tree = false;
     static String outputType = "asm";
+
     public static void compile(String className, Reader in) throws IOException {
         var lexer = new almanLexer(CharStreams.fromReader(in));
         var parser = new almanParser(new CommonTokenStream(lexer));
@@ -31,17 +32,17 @@ public class Main {
         System.out.println(out);
 
         // Typcheck starten
-        ast.welcome(new TypeCheckVisitor());
+        //ast.welcome(new TypeCheckVisitor());
 
         // JBC oder Assembly generieren
         if (outputType.equals("jbc")) {
             ast.welcome(new GenJBC(className));
         } else if (outputType.equals("asm")) {
-            ast.welcome(new GenAssembly(new FileWriter(STR."\{className}.s")));
+            ast.welcome(new GenAssembly(className));
         }
 
         // Treeansicht generieren
-        if(tree) {
+        if (tree) {
             displayTree(parser, antlrTree);
         }
     }
@@ -58,17 +59,18 @@ public class Main {
         frame.pack();
         frame.setVisible(true);
     }
+
     public static void main(String[] args) throws IOException {
         if (args.length == 0) {
             System.err.println("""
-                    Usage: java -jar L1.jar <file>
-                    Options:
-                    \t--enable-tree-view : Show the tree view of the parsed file
-                    \t--output-type <type> : Specify the output type of the compiler
-            """);
+                            Usage: java -jar L1.jar <file>
+                            Options:
+                            \t--enable-tree-view : Show the tree view of the parsed file
+                            \t--output-type <type> : Specify the output type of the compiler
+                    """);
             System.exit(1);
         }
-        for (var arg: args) {
+        for (var arg : args) {
             if (arg.equals("--enable-tree-view")) {
                 tree = true;
                 args = Arrays.stream(args).filter(s -> !s.equals("--enable-tree-view")).toArray(String[]::new);

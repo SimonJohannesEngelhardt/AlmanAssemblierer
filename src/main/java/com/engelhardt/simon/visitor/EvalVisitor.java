@@ -61,7 +61,7 @@ public class EvalVisitor implements Visitor {
 
     @Override
     public void visit(WhileStatement whileStatement) {
-
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -71,11 +71,16 @@ public class EvalVisitor implements Visitor {
 
     @Override
     public void visit(ContinueStatement continueStatement) {
-        
+
     }
 
     @Override
     public void visit(BreakStatement breakStatement) {
+
+    }
+
+    @Override
+    public void visit(VarAssignment varAssignment) {
 
     }
 
