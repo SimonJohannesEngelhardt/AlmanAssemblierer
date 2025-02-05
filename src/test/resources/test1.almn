@@ -1,3 +1,0 @@
-definiere f1 (x:long) : gleitkommazahl {
-    gib zurueck 1;
-}

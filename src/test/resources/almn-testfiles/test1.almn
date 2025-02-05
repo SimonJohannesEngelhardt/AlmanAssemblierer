@@ -1,0 +1,28 @@
+x: float = 0;
+definiere f1 (x:long) : long {
+    f1(1);
+    1+1;
+    2-2;
+    wenn (1==1) {
+        1;
+    } ansonsten wenn (1==1) {
+        2;
+    } ansonsten {
+        3;
+    }
+    gib zurueck 1;
+}
+
+definiere f2 (x:long) : long {
+    f1(1);
+    1+1;
+    2-2;
+    wenn (1<=1) {
+        1;
+    } ansonsten wenn (1==1) {
+        2;
+    } ansonsten {
+        3;
+    }
+    gib zurueck 1;
+}
