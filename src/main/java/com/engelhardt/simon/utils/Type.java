@@ -27,6 +27,13 @@ public sealed interface Type permits Type.PrimitiveType, Type.ReferenceType {
         return !isPrimitive();
     }
 
+    static boolean isBuildIn(String name) {
+        return switch (name) {
+            case "gleitkommazahl", "zeichenkette", "ganzzahl", "wahrheitswert" -> true;
+            default -> false;
+        };
+    }
+
     record PrimitiveType(String jvmName, String name) implements Type {
         @Override
         public boolean isPrimitive() {
