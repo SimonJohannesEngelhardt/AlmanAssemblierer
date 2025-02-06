@@ -1,3 +1,0 @@
-definiere main() : long {
-    gib zurueck 42;
-}

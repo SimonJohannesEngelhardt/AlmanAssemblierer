@@ -20,3 +20,42 @@ definiere g9(x1:long,x2:long,x3:long,x4:long,x5:long,x6:long,x7:long,x8:long,x9:
 definiere f1(x: long, y:long, z:long): long {
     gib zurueck x+y*z;
 }
+
+definiere whileLoop(x: long) :long {
+    lasse i: long = 0;
+    waehrend (i < x) {
+        i = i + 1;
+    }
+    gib zurueck i;
+}
+
+definiere fakultaet(n: long): long {
+    lasse res: long = 1;
+    waehrend(n > 1) {
+        res = res * n;
+        n = n - 1;
+    }
+    gib zurueck res;
+}
+
+definiere fakultaetRecursive(n: long) : long {
+    wenn (n <= 1) {
+        gib zurueck 1;
+    } ansonsten {
+        gib zurueck n * fakultaetRecursive(n-1);
+    }
+}
+
+definiere fakultaetIt(n : long) : long {
+    gib zurueck fakultaetAux(1,n);
+}
+
+definiere fakultaetAux(r: long, n: long) : long {
+    wenn (n == 1) {
+        gib zurueck r;
+    } ansonsten {
+        gib zurueck fakultaetAux(r*n, n-1);
+    }
+}
+
+

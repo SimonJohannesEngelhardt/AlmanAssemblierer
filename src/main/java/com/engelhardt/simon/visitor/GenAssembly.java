@@ -59,11 +59,14 @@ public class GenAssembly implements Visitor {
     public void visit(OpExpr opExpr) {
         // Code für linke Seite generieren
         opExpr.left.welcome(this);
-        // Ergebnis in %rbx speichern
+        // Ergebnis auf dem Stack speichern
         nl();
-        write("movq\t%rax, %rbx");
+        write("pushq\t%rax");
         // Code für rechte Seite generieren
         opExpr.right.welcome(this);
+        nl();
+        // Ergbenis wieder vom Stack nehmen
+        write("popq\t%rbx");
 
         // Ergebnis in %rax speichern
         switch (opExpr.operator) {
@@ -73,7 +76,9 @@ public class GenAssembly implements Visitor {
             }
             case sub -> {
                 nl();
-                write("subq\t%rbx, %rax");
+                write("subq\t%rax, %rbx");
+                nl();
+                write("movq\t%rbx, %rax");
             }
             case mult -> {
                 nl();
@@ -256,7 +261,7 @@ public class GenAssembly implements Visitor {
     @Override
     public void visit(VariableDecl variableDecl) {
         if (!(
-                variableDecl.expr instanceof IntLiteral || variableDecl.expr instanceof OpExpr
+                variableDecl.expr instanceof IntLiteral || variableDecl.expr instanceof OpExpr || variableDecl.expr instanceof VarAssignment
         )) throw new RuntimeException("kann keine VarDecl schreiben");
 
         if (variableDecl.global) {
@@ -272,16 +277,19 @@ public class GenAssembly implements Visitor {
         write(".p2align\t3, 0x0"); // Für long müsste es 2 statt 3 sein
         write("\n");
         write(STR."_\{variableDecl.varName}: ");
-        if (variableDecl.expr instanceof OpExpr) {
+        var expr = variableDecl.expr;
+        // TODO hier kann wahrscheinlich beides zusammengefasst werden, wenn man jedes mal den EvalVisitor drüberlaufen lässt.
+        if (expr instanceof OpExpr opExpr) {
             EvalVisitor eval = new EvalVisitor();
-            variableDecl.expr.welcome(eval);
+            opExpr.welcome(eval);
             nl();
             write(STR.".quad \{eval.result}");
-        } else {
+            globalVars.put(variableDecl.varName, variableDecl);
+        } else if (expr instanceof IntLiteral intLiteral) {
             switch (variableDecl.type) {
                 case "long" -> {
                     nl();
-                    long value = ((IntLiteral) variableDecl.expr).n;
+                    long value = intLiteral.n;
                     write(STR.".quad \{value}");
                     globalVars.put(variableDecl.varName, variableDecl);
                 }
@@ -289,6 +297,8 @@ public class GenAssembly implements Visitor {
                     throw new UnsupportedOperationException("Keine weiteren Typen bisher unterstützt.");
                 }
             }
+        } else if (expr instanceof VarAssignment varAssignment) {
+            throw new UnsupportedOperationException("Varassignment bisher noch nicht unterstützt");
         }
         write("\n\n");
     }
@@ -298,7 +308,7 @@ public class GenAssembly implements Visitor {
         nl();
         write("subq\t$8, %rsp");
         nl();
-        write(STR."movq\t%rax, \{sp}(%rsp)");
+        write(STR."movq\t%rax, \{sp}(%rbp)");
         env.put(variableDecl.varName, sp);
         sp -= 8;
     }
@@ -339,8 +349,12 @@ public class GenAssembly implements Visitor {
         write("\n");
 
         functions = new HashMap<>();
+        // Zuerst alle Funktionen registrieren
         prog.functionDefinitions.forEach(fd -> {
             functions.put(fd.name, fd);
+        });
+        // Dann erst den Körper aufrufen, sonst funktioniert ein Aufruf in vorheriger Funktion nicht
+        prog.functionDefinitions.forEach(fd -> {
             fd.welcome(this);
         });
 
@@ -378,7 +392,7 @@ public class GenAssembly implements Visitor {
     @Override
     public void visit(FunctionCall functionCall) {
         if (functions.get(functionCall.functionName) == null) {
-            reportError(functionCall.line, functionCall.column, "This function call has no function defined.");
+            reportError(functionCall.line, functionCall.column, STR."\{functionCall.functionName}() has no function defined.");
         }
         for (int i = 0; i < Math.min(functionCall.args.size(), registers.length); i++) {
             functionCall.args.get(i).welcome(this);

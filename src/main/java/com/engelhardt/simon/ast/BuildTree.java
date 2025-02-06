@@ -109,6 +109,8 @@ public class BuildTree extends almanBaseListener {
         } else if (ctx.LPAR() != null && ctx.RPAR() != null) {
             ctx.result = ctx.expr().getFirst().result;
             ctx.result.attribute.parenthesis = true;
+        } else if (ctx.functionCall() != null) {
+            ctx.result = ctx.functionCall().result;
         } else {
             throw new RuntimeException("Unrecognized expression");
         }
