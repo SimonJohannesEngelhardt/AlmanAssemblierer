@@ -58,4 +58,12 @@ definiere fakultaetAux(r: long, n: long) : long {
     }
 }
 
+definiere fib(n: long): long {
+    wenn (n <= 1) {
+        gib zurueck n;
+    } ansonsten {
+        gib zurueck fib(n-2) + fib(n-1);
+    }
+}
+
 

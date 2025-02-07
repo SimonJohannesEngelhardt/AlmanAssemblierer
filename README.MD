@@ -1,6 +1,6 @@
 # Alman Assembliere
 
-## Notitzen
+## Notizen
 
 Auf Linux: gcc test1.s -o a.out
 Auf MacOS:

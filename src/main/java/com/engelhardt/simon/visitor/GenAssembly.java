@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import static java.lang.StringTemplate.STR;
+
 public class GenAssembly implements Visitor {
     String filename;
     String programName;
