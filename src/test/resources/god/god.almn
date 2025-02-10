@@ -32,7 +32,7 @@ definiere whileLoop(x: dezimalzahl) :dezimalzahl {
     gib zurueck i;
 }
 
-definiere fakultaet(n: dezimalzahl): nichts {
+definiere fakultaet(n: dezimalzahl): dezimalzahl {
     lasse res: dezimalzahl = 1;
     waehrend(n > 1) {
         res = res * n;
@@ -58,6 +58,13 @@ definiere fakultaetAux(r: dezimalzahl, n: dezimalzahl) : dezimalzahl {
         gib zurueck r;
     } ansonsten {
         gib zurueck fakultaetAux(r*n, n-1);
+    }
+}
+definiere fakultaetAux1(r: dezimalzahl, n: dezimalzahl) : dezimalzahl {
+    wenn (n == 1) {
+        gib zurueck r;
+    } ansonsten {
+        gib zurueck fakultaetAux1(r*n, n-1);
     }
 }
 

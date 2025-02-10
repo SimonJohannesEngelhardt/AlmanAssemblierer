@@ -18,6 +18,7 @@ public class GenAssembly implements Visitor {
     String programName;
     private final Stack<String> loopConditionStack = new Stack<>();
     private final Stack<String> loopEndStack = new Stack<>();
+    private int tailCallOptimizationID;
     Writer out;
     String[] registers = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
     Map<String, FunctionDefinition> functions;
@@ -216,11 +217,11 @@ public class GenAssembly implements Visitor {
         var oldEnv = env;
         env = new HashMap<>();
 
-        /*TODO Tailcall
-        if (funDef.attribute.hasTailCall){
-            write("\n.LStart:");
+        if (functionDefinition.attribute.hasTailCall) {
+            tailCallOptimizationID = next();
+            write(STR."\n.LStart\{tailCallOptimizationID}:");
         }
-        */
+
 
         // Den Stackpointer um die Größe des Argument-Stacks reduzieren
         nl();
@@ -390,9 +391,11 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(FunctionCall functionCall) {
-        if (functions.get(functionCall.functionName) == null) {
+        var functionDefinition = functions.get(functionCall.functionName);
+        if (functionDefinition == null) {
             reportError(functionCall.line, functionCall.column, STR."\{functionCall.functionName}() has no function defined.");
         }
+
         for (int i = 0; i < Math.min(functionCall.args.size(), registers.length); i++) {
             functionCall.args.get(i).welcome(this);
             nl();
@@ -403,6 +406,10 @@ public class GenAssembly implements Visitor {
             functionCall.args.get(i).welcome(this);
             nl();
             write("pushq\t%rax");
+        }
+        if (functionCall.attribute.isTailCall) {
+            nl();
+            write(STR."jmp .LStart\{tailCallOptimizationID}");
         }
         nl();
         write(STR."call\t_\{functionCall.functionName}");

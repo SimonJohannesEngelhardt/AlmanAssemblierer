@@ -4,7 +4,7 @@ package com.engelhardt.simon.antlr;
 import com.engelhardt.simon.ast.*;
 }
 
-program returns [AST result]:
+program returns [Prog result]:
   (functionDefinition | statement)*;
 
 functionDefinition returns [FunctionDefinition result]:

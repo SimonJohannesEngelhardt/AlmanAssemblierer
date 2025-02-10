@@ -4,6 +4,7 @@ import com.engelhardt.simon.antlr.almanLexer;
 import com.engelhardt.simon.antlr.almanParser;
 import com.engelhardt.simon.ast.BuildTree;
 import com.engelhardt.simon.visitor.GenAssembly;
+import com.engelhardt.simon.visitor.MarkTailCall;
 import com.engelhardt.simon.visitor.PrettyPrinter;
 import com.engelhardt.simon.visitor.TypeCheckVisitor;
 import org.antlr.v4.gui.TreeViewer;
@@ -41,6 +42,9 @@ public class Main {
         // Typcheck starten
         ast.welcome(new TypeCheckVisitor());
 
+        // Tail Call Optimization
+        ast.functionDefinitions.forEach(fd -> fd.welcome(new MarkTailCall()));
+
         // JBC oder Assembly generieren
         ast.welcome(new GenAssembly(className));
 
@@ -69,7 +73,6 @@ public class Main {
                             Usage: java -jar L1.jar <file>
                             Options:
                             \t--enable-tree-view : Show the tree view of the parsed file
-                            \t--output-type <type> : Specify the output type of the compiler#
                             \t--no-pretty-printer
                     """);
             System.exit(1);

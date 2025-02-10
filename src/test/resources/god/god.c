@@ -31,10 +31,11 @@ int main() {
     test(720, fakultaetIt(6));
     test(720, fakultaetAux(1, 6));
     test(5040, fakultaetAux(1, 7));
-    test1(0, fib(0));
-    test1(2, fib(3));
-    test1(3, fib(4));
-    test1(5, fib(5));
-    test1(8, fib(6));
+    test(5040, fakultaetAux1(1,7));
+    test(0, fib(0));
+    test(2, fib(3));
+    test(3, fib(4));
+    test(5, fib(5));
+    test(8, fib(6));
 }
 
