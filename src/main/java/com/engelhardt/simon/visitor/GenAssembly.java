@@ -2,6 +2,7 @@ package com.engelhardt.simon.visitor;
 
 import com.engelhardt.simon.ast.*;
 import com.engelhardt.simon.utils.Parameter;
+import com.engelhardt.simon.utils.Type;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -11,8 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-
-import static java.lang.StringTemplate.STR;
 
 public class GenAssembly implements Visitor {
     String filename;
@@ -195,7 +194,7 @@ public class GenAssembly implements Visitor {
     public void visit(FunctionDefinition functionDefinition) {
         //.globl  <functionName>
         write("\t.globl\t");
-        write("_" + functionDefinition.name);
+        write(STR."_\{functionDefinition.name}");
         // .type <functionName>, @function
         //write(".type\t");
         //write("_" + functionDefinition.name);
@@ -288,19 +287,19 @@ public class GenAssembly implements Visitor {
             write(STR.".quad \{eval.result}");
             globalVars.put(variableDecl.varName, variableDecl);
         } else if (expr instanceof IntLiteral intLiteral) {
-            switch (variableDecl.type) {
-                case "long" -> {
+            switch (variableDecl.theType.name()) {
+                case Type.long_type -> {
                     nl();
                     long value = intLiteral.n;
                     write(STR.".quad \{value}");
                     globalVars.put(variableDecl.varName, variableDecl);
                 }
-                default -> {
-                    throw new UnsupportedOperationException("Keine weiteren Typen bisher unterstützt.");
-                }
+                case Type.double_type -> throw new UnsupportedOperationException("Type Double");
+                default ->
+                        throw new UnsupportedOperationException("Keine weiteren Typen bisher unterstützt.");
             }
         } else if (expr instanceof VarAssignment varAssignment) {
-            throw new UnsupportedOperationException("Varassignment bisher noch nicht unterstützt");
+            throw new UnsupportedOperationException(STR."\{varAssignment.varName}Varassignment bisher noch nicht unterstützt");
         }
         write("\n\n");
     }
@@ -318,9 +317,10 @@ public class GenAssembly implements Visitor {
     @Override
     public void visit(Prog prog) {
         try {
+            // Generate .h file
             out = new FileWriter(STR."\{filename}.h");
             prog.functionDefinitions.forEach(fd -> {
-                write(STR."\{fd.resultType} \{fd.name}");
+                write(STR."\{fd.theType.ctype()} \{fd.name}");
                 writeParameters(fd.parameters);
                 write(";\n");
             });
@@ -337,12 +337,13 @@ public class GenAssembly implements Visitor {
                 out.close();
             }
 
+            // Prepare to write to the .s file
             out = new FileWriter(STR."\{filename}.s");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-
+        // Global Vars
         globalVars = new HashMap<>();
         prog.variableDecls.forEach(variableDecl -> {
             globalVars.put(variableDecl.varName, variableDecl);
@@ -352,13 +353,9 @@ public class GenAssembly implements Visitor {
 
         functions = new HashMap<>();
         // Zuerst alle Funktionen registrieren
-        prog.functionDefinitions.forEach(fd -> {
-            functions.put(fd.name, fd);
-        });
+        prog.functionDefinitions.forEach(fd -> functions.put(fd.name, fd));
         // Dann erst den Körper aufrufen, sonst funktioniert ein Aufruf in vorheriger Funktion nicht
-        prog.functionDefinitions.forEach(fd -> {
-            fd.welcome(this);
-        });
+        prog.functionDefinitions.forEach(fd -> fd.welcome(this));
 
 
         try {
@@ -378,7 +375,7 @@ public class GenAssembly implements Visitor {
             } else {
                 write(", ");
             }
-            write(p.type);
+            write(p.theType.ctype());
             write(" ");
             write(p.name);
 

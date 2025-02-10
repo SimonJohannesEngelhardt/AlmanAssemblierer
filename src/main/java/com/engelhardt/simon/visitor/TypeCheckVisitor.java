@@ -9,30 +9,41 @@ import java.util.Map;
 
 public class TypeCheckVisitor implements Visitor {
     Map<String, Type> env;
-    Map<String, FunctionDefinition> functions = new HashMap<>();
+    Map<String, Type> globalVars;
+    Map<String, FunctionDefinition> functions;
     FunctionDefinition currentFunction = null;
 
     @Override
     public void visit(Prog prog) {
+        functions = new HashMap<>();
+        globalVars = new HashMap<>();
         prog.functionDefinitions.forEach(fd -> functions.put(fd.name, fd));
         prog.functionDefinitions.forEach(fd -> fd.welcome(this));
+
+        // Global Vars
+        prog.variableDecls.forEach(variableDecl -> {
+            globalVars.put(variableDecl.varName, Type.of(variableDecl.type));
+            variableDecl.welcome(this);
+        });
     }
 
     @Override
     public void visit(FunctionDefinition functionDefinition) {
-        functionDefinition.type = Type.of(functionDefinition.resultType, "");
+        functionDefinition.theType = Type.of(functionDefinition.resultType);
         currentFunction = functionDefinition;
         env = new HashMap<>();
-        functionDefinition.parameters.forEach(param -> {
-            Type type = Type.of(param.type, "");
+        functionDefinition.parameters = functionDefinition.parameters.stream().peek(param -> {
+            Type type = Type.of(param.type);
             env.put(param.name, type);
-        });
+            param.theType = type;
+        }).toList();
+
         functionDefinition.block.welcome(this);
     }
 
     @Override
     public void visit(IntLiteral intLiteral) {
-        intLiteral.type = Type.LONG_TYPE;
+        intLiteral.theType = Type.LONG_TYPE;
     }
 
     @Override
@@ -40,54 +51,59 @@ public class TypeCheckVisitor implements Visitor {
         opExpr.left.welcome(this);
         opExpr.right.welcome(this);
         if (opExpr.operator.isLogical()) {
-            opExpr.type = Type.BOOLEAN_TYPE;
-            if (!opExpr.left.type.equals(Type.BOOLEAN_TYPE) || !opExpr.right.type.equals(Type.BOOLEAN_TYPE)) {
-                reportError(opExpr.line, opExpr.column, STR."Wrong type in boolean operand. \{opExpr.left.type.name()} != \{opExpr.right.type.name()}");
+            opExpr.theType = Type.BOOLEAN_TYPE;
+            if (!opExpr.left.theType.equals(Type.BOOLEAN_TYPE) || !opExpr.right.theType.equals(Type.BOOLEAN_TYPE)) {
+                reportError(opExpr.line, opExpr.column, STR."Wrong type in boolean operand. \{opExpr.left.theType.name()} != \{opExpr.right.theType.name()}");
             }
         } else if (opExpr.operator.isArithmetic()) {
-            opExpr.type = Type.LONG_TYPE;
-            if (!opExpr.left.type.equals(Type.LONG_TYPE) || !opExpr.right.type.equals(Type.LONG_TYPE)) {
-                reportError(opExpr.line, opExpr.column, STR."Wrong type in arithmetic operand. \{opExpr.left.type.name()} != \{opExpr.right.type.name()}");
+            opExpr.theType = Type.LONG_TYPE;
+            if (!opExpr.left.theType.equals(Type.LONG_TYPE) || !opExpr.right.theType.equals(Type.LONG_TYPE)) {
+                reportError(opExpr.line, opExpr.column, STR."Wrong type in arithmetic operand. \{opExpr.left.theType.name()} != \{opExpr.right.theType.name()}");
             }
         } else if (opExpr.operator.isComparison()) {
-            opExpr.type = Type.BOOLEAN_TYPE;
-            if (!opExpr.left.type.equals(Type.LONG_TYPE) || !opExpr.right.type.equals(Type.LONG_TYPE)) {
-                reportError(opExpr.line, opExpr.column, STR."Wrong type in comparison operand. \{opExpr.left.type.name()} != \{opExpr.right.type.name()}");
+            opExpr.theType = Type.BOOLEAN_TYPE;
+            if (!opExpr.left.theType.equals(Type.LONG_TYPE) || !opExpr.right.theType.equals(Type.LONG_TYPE)) {
+                reportError(opExpr.line, opExpr.column, STR."Wrong type in comparison operand. \{opExpr.left.theType.name()} != \{opExpr.right.theType.name()}");
             }
         }
     }
 
     @Override
     public void visit(Variable var) {
-        Type type = env.get(var.name);
+        Type type = env.getOrDefault(var.name, globalVars.getOrDefault(var.name, null));
         if (type == null) {
             reportError(var.line, var.column, STR."Unknown variable \{var.name}");
         } else {
-            var.type = type;
+            var.theType = type;
         }
     }
 
     @Override
     public void visit(ReturnStatement returnStatement) {
         returnStatement.expr.welcome(this);
-        if (!returnStatement.expr.type.equals(currentFunction.type)) {
+        if (!returnStatement.expr.theType.equals(currentFunction.theType)) {
             reportError(
                     returnStatement.line,
                     returnStatement.column,
                     STR."""
                     Return statement mismatch:
-                        Function Type: \{currentFunction.type.name()}
-                        Return Type: \{returnStatement.expr.type.name()}
+                        Function Type: \{currentFunction.theType.name()}
+                        Return Type: \{returnStatement.expr.theType.name()}
                     """
             );
         }
-        returnStatement.type = currentFunction.type;
+        returnStatement.theType = currentFunction.theType;
     }
-
 
     @Override
     public void visit(VariableDecl variableDecl) {
-//        throw new UnsupportedOperationException("Not supported yet.");
+        variableDecl.expr.welcome(this);
+        variableDecl.theType = variableDecl.expr.theType;
+        if (variableDecl.global) {
+            globalVars.put(variableDecl.varName, variableDecl.theType);
+        } else {
+            env.put(variableDecl.varName, variableDecl.theType);
+        }
     }
 
 
@@ -104,15 +120,16 @@ public class TypeCheckVisitor implements Visitor {
             reportError(functionCall.line, functionCall.column, STR."Unknown function \{functionCall.functionName}");
         } else if (functionCall.args.size() != function.parameters.size()) {
             reportError(functionCall.line, functionCall.column, "Function call mismatch. Wrong number of arguments.");
-            functionCall.type = Type.of(function.resultType, "");
+            functionCall.theType = Type.of(function.resultType);
         } else {
             var argsIterator = functionCall.args.iterator();
             for (var param : function.parameters) {
                 var arg = argsIterator.next();
-                if (!arg.type.equals(Type.of(param.type, ""))) {
+                if (!arg.theType.equals(Type.of(param.type))) {
                     reportError(arg.line, arg.column, "Function call mismatch. Wrong type of argument.");
                 }
             }
+            functionCall.theType = Type.of(function.resultType);
         }
     }
 

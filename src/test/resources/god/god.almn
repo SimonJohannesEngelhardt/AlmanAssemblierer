@@ -1,36 +1,39 @@
-definiere f42() : long{
+konstante i123: dezimalzahl = 100;
+
+
+definiere f42() : dezimalzahl{
     gib zurueck 42;
 }
 
-definiere f6(x1:long,x2:long,x3:long,x4:long,x5:long,x6:long,x7:long): long {
+definiere f6(x1:dezimalzahl,x2:dezimalzahl,x3:dezimalzahl,x4:dezimalzahl,x5:dezimalzahl,x6:dezimalzahl,x7:dezimalzahl): dezimalzahl {
     gib zurueck x6;
 }
 
-definiere f7(x1:long,x2:long,x3:long,x4:long,x5:long,x6:long,x7:long): long {
+definiere f7(x1:dezimalzahl,x2:dezimalzahl,x3:dezimalzahl,x4:dezimalzahl,x5:dezimalzahl,x6:dezimalzahl,x7:dezimalzahl): dezimalzahl {
     gib zurueck x1;
 }
 
-definiere g1(x1:long,x2:long,x3:long,x4:long,x5:long,x6:long,x7:long,x8:long,x9:long): long {
+definiere g1(x1:dezimalzahl,x2:dezimalzahl,x3:dezimalzahl,x4:dezimalzahl,x5:dezimalzahl,x6:dezimalzahl,x7:dezimalzahl,x8:dezimalzahl,x9:dezimalzahl): dezimalzahl {
     gib zurueck x1;
 }
-definiere g9(x1:long,x2:long,x3:long,x4:long,x5:long,x6:long,x7:long,x8:long,x9:long): long {
+definiere g9(x1:dezimalzahl,x2:dezimalzahl,x3:dezimalzahl,x4:dezimalzahl,x5:dezimalzahl,x6:dezimalzahl,x7:dezimalzahl,x8:dezimalzahl,x9:dezimalzahl): dezimalzahl {
     gib zurueck x9;
 }
 
-definiere f1(x: long, y:long, z:long): long {
+definiere f1(x: dezimalzahl, y:dezimalzahl, z:dezimalzahl): dezimalzahl {
     gib zurueck x+y*z;
 }
 
-definiere whileLoop(x: long) :long {
-    lasse i: long = 0;
+definiere whileLoop(x: dezimalzahl) :dezimalzahl {
+    lasse i: dezimalzahl = 0;
     waehrend (i < x) {
         i = i + 1;
     }
     gib zurueck i;
 }
 
-definiere fakultaet(n: long): long {
-    lasse res: long = 1;
+definiere fakultaet(n: dezimalzahl): nichts {
+    lasse res: dezimalzahl = 1;
     waehrend(n > 1) {
         res = res * n;
         n = n - 1;
@@ -38,7 +41,7 @@ definiere fakultaet(n: long): long {
     gib zurueck res;
 }
 
-definiere fakultaetRecursive(n: long) : long {
+definiere fakultaetRecursive(n: dezimalzahl) : dezimalzahl {
     wenn (n <= 1) {
         gib zurueck 1;
     } ansonsten {
@@ -46,11 +49,11 @@ definiere fakultaetRecursive(n: long) : long {
     }
 }
 
-definiere fakultaetIt(n : long) : long {
+definiere fakultaetIt(n : dezimalzahl) : dezimalzahl {
     gib zurueck fakultaetAux(1,n);
 }
 
-definiere fakultaetAux(r: long, n: long) : long {
+definiere fakultaetAux(r: dezimalzahl, n: dezimalzahl) : dezimalzahl {
     wenn (n == 1) {
         gib zurueck r;
     } ansonsten {
@@ -58,7 +61,7 @@ definiere fakultaetAux(r: long, n: long) : long {
     }
 }
 
-definiere fib(n: long): long {
+definiere fib(n: dezimalzahl): dezimalzahl {
     wenn (n <= 1) {
         gib zurueck n;
     } ansonsten {

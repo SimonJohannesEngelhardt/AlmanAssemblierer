@@ -199,8 +199,9 @@ public class BuildTree extends almanBaseListener {
     public void exitVarDecl(almanParser.VarDeclContext ctx) {
         String varName = ctx.ID().getFirst().getText();
         String type = ctx.ID().getLast().getText();
+        var isGlobal = ctx.parent.parent.getRuleIndex() == almanParser.RULE_program;
         if (ctx.CONST() != null) {
-            if (ctx.expr() != null) {
+            if (ctx.expr() == null) {
                 throw new RuntimeException("const declaration must have an assignment.");
             }
             ctx.result = new VariableDecl(
@@ -210,7 +211,8 @@ public class BuildTree extends almanBaseListener {
                     type,
                     ctx.expr().result,
                     false,
-                    ctx.parent.parent.getRuleIndex() == almanParser.RULE_program
+                    isGlobal
+
             );
         } else if (ctx.LET() != null) {
             ctx.result = new VariableDecl(
@@ -219,9 +221,8 @@ public class BuildTree extends almanBaseListener {
                     varName,
                     type,
                     ctx.expr() == null ? null : ctx.expr().result,
-                    false,
-                    ctx.parent.parent.getRuleIndex() == almanParser.RULE_program
-            );
+                    true,
+                    isGlobal);
         }
     }
 

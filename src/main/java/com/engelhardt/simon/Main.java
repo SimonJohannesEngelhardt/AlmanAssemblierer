@@ -4,8 +4,8 @@ import com.engelhardt.simon.antlr.almanLexer;
 import com.engelhardt.simon.antlr.almanParser;
 import com.engelhardt.simon.ast.BuildTree;
 import com.engelhardt.simon.visitor.GenAssembly;
-import com.engelhardt.simon.visitor.GenJBC;
 import com.engelhardt.simon.visitor.PrettyPrinter;
+import com.engelhardt.simon.visitor.TypeCheckVisitor;
 import org.antlr.v4.gui.TreeViewer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -21,7 +21,6 @@ import java.util.Arrays;
 public class Main {
     static boolean tree = false;
     static boolean pretty = true;
-    static String outputType = "asm";
 
     public static void compile(String className, Reader in) throws IOException {
         var lexer = new almanLexer(CharStreams.fromReader(in));
@@ -40,14 +39,10 @@ public class Main {
         }
 
         // Typcheck starten
-        //ast.welcome(new TypeCheckVisitor());
+        ast.welcome(new TypeCheckVisitor());
 
         // JBC oder Assembly generieren
-        if (outputType.equals("jbc")) {
-            ast.welcome(new GenJBC(className));
-        } else if (outputType.equals("asm")) {
-            ast.welcome(new GenAssembly(className));
-        }
+        ast.welcome(new GenAssembly(className));
 
         // Treeansicht generieren
         if (tree) {
@@ -83,10 +78,6 @@ public class Main {
             if (arg.equals("--enable-tree-view")) {
                 tree = true;
                 args = Arrays.stream(args).filter(s -> !s.equals("--enable-tree-view")).toArray(String[]::new);
-            }
-            if (arg.equals("--output-type")) {
-                outputType = args[Arrays.asList(args).indexOf("--output-type") + 1];
-                args = Arrays.stream(args).filter(s -> !s.equals("--output-type")).toArray(String[]::new);
             }
             if (arg.equals("--no-pretty-printer")) {
                 pretty = false;

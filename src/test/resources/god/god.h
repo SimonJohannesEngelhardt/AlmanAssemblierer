@@ -5,7 +5,7 @@ long g1(long x1, long x2, long x3, long x4, long x5, long x6, long x7, long x8, 
 long g9(long x1, long x2, long x3, long x4, long x5, long x6, long x7, long x8, long x9);
 long f1(long x, long y, long z);
 long whileLoop(long x);
-long fakultaet(long n);
+void fakultaet(long n);
 long fakultaetRecursive(long n);
 long fakultaetIt(long n);
 long fakultaetAux(long r, long n);
