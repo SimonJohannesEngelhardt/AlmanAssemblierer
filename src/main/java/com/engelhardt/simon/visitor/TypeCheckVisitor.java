@@ -17,14 +17,15 @@ public class TypeCheckVisitor implements Visitor {
     public void visit(Prog prog) {
         functions = new HashMap<>();
         globalVars = new HashMap<>();
-        prog.functionDefinitions.forEach(fd -> functions.put(fd.name, fd));
-        prog.functionDefinitions.forEach(fd -> fd.welcome(this));
-
         // Global Vars
         prog.variableDecls.forEach(variableDecl -> {
             globalVars.put(variableDecl.varName, Type.of(variableDecl.type));
             variableDecl.welcome(this);
         });
+        // Functions
+        prog.functionDefinitions.forEach(fd -> functions.put(fd.name, fd));
+        prog.functionDefinitions.forEach(fd -> fd.welcome(this));
+
     }
 
     @Override
@@ -116,7 +117,9 @@ public class TypeCheckVisitor implements Visitor {
     public void visit(FunctionCall functionCall) {
         functionCall.args.forEach(arg -> arg.welcome(this));
         FunctionDefinition function = functions.get(functionCall.functionName);
-        if (function == null) {
+        if (functionCall.functionName.equals("drucke")) {
+            functionCall.theType = Type.VOID_TYPE;
+        } else if (function == null) {
             reportError(functionCall.line, functionCall.column, STR."Unknown function \{functionCall.functionName}");
         } else if (functionCall.args.size() != function.parameters.size()) {
             reportError(functionCall.line, functionCall.column, "Function call mismatch. Wrong number of arguments.");

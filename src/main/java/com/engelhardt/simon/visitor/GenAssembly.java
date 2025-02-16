@@ -8,17 +8,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 public class GenAssembly implements Visitor {
-    String filename;
-    String programName;
     private final Stack<String> loopConditionStack = new Stack<>();
     private final Stack<String> loopEndStack = new Stack<>();
-    private int tailCallOptimizationID;
+    String filename;
+    String programName;
+    String[] libraryFunctions = {"drucke"};
     Writer out;
     String[] registers = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
     Map<String, FunctionDefinition> functions;
@@ -28,6 +25,8 @@ public class GenAssembly implements Visitor {
     int argsStackSize = 0;
     // Counter for unique labels
     int next = 0;
+    Map<String, String> stringsToWrite = new HashMap<>();
+    private int tailCallOptimizationID;
 
     public GenAssembly(String programName) {
         this.filename = programName;
@@ -317,10 +316,17 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(Prog prog) {
+        for (FunctionDefinition fd : prog.functionDefinitions) {
+            if (fd.name.equals("haupt")) {
+                fd.name = "main";
+            }
+
+        }
+
         try {
             // Generate .h file
             out = new FileWriter(STR."\{filename}.h");
-            prog.functionDefinitions.forEach(fd -> {
+            prog.functionDefinitions.stream().filter(fd -> !fd.name.equals("main")).forEach(fd -> {
                 write(STR."\{fd.theType.ctype()} \{fd.name}");
                 writeParameters(fd.parameters);
                 write(";\n");
@@ -357,8 +363,13 @@ public class GenAssembly implements Visitor {
         prog.functionDefinitions.forEach(fd -> functions.put(fd.name, fd));
         // Dann erst den Körper aufrufen, sonst funktioniert ein Aufruf in vorheriger Funktion nicht
         prog.functionDefinitions.forEach(fd -> fd.welcome(this));
-
-
+        write("""
+                	.section	__TEXT,__cstring,cstring_literals
+                L_.str:                                 ## @.str
+                	.asciz	"%ld\\n"
+                
+                .subsections_via_symbols
+                """);
         try {
             write("\n");
             out.close();
@@ -391,6 +402,10 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(FunctionCall functionCall) {
+        if (Arrays.stream(libraryFunctions).anyMatch(s -> s.equals(functionCall.functionName))) {
+            callLibraryFunction(functionCall);
+            return;
+        }
         var functionDefinition = functions.get(functionCall.functionName);
         if (functionDefinition == null) {
             reportError(functionCall.line, functionCall.column, STR."\{functionCall.functionName}() has no function defined.");
@@ -413,6 +428,33 @@ public class GenAssembly implements Visitor {
         }
         nl();
         write(STR."call\t_\{functionCall.functionName}");
+    }
+
+    private void callLibraryFunction(FunctionCall call) {
+        switch (call.functionName) {
+            case "drucke" -> {
+                nl();
+                write("subq\t$16, %rsp");
+                nl();
+                write("movq\t%rdi, -8(%rbp)");
+                call.args.getFirst().welcome(this);
+                nl();
+                write("movq\t%rax, %rsi");
+                nl();
+                write("leaq\tL_.str(%rip), %rdi");
+                nl();
+                write("callq\t _printf");
+                nl();
+                write("addq\t$16, %rsp");
+                nl();
+                write("popq %rbp");
+                nl();
+                write("retq");
+            }
+            case "eingabe" -> System.out.println("Eingabe");
+            default ->
+                    throw new UnsupportedOperationException("Kenne diese Bibliotheksfunktion nicht");
+        }
     }
 
     @Override
@@ -499,12 +541,18 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(VarAssignment varAssignment) {
-        var locationOnStack = env.get(varAssignment.varName);
-        if (locationOnStack == null) {
-            throw new RuntimeException(STR."Konnte \{varAssignment.varName} nicht finden");
-        }
         varAssignment.expr.welcome(this);
-        nl();
-        write(STR."movq\t%rax, \{locationOnStack}(%rbp)");
+        if (env.containsKey(varAssignment.varName)) {
+            var locationOnStack = env.get(varAssignment.varName);
+            if (locationOnStack == null) {
+                throw new RuntimeException(STR."Konnte \{varAssignment.varName} nicht finden");
+            }
+            nl();
+            write(STR."movq\t%rax, \{locationOnStack}(%rbp)");
+        } else if (globalVars.containsKey(varAssignment.varName)) {
+            var labelName = globalVars.get(varAssignment.varName).varName;
+            nl();
+            write(STR."movq\t%rax, _\{labelName}(%rip)");
+        }
     }
 }

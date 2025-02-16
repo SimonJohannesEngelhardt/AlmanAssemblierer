@@ -76,4 +76,9 @@ definiere fib(n: dezimalzahl): dezimalzahl {
     }
 }
 
+definiere haupt(): dezimalzahl {
+    i123 = i123;
+    drucke(i123);
+}
+
 

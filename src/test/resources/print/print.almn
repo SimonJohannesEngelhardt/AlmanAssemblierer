@@ -1,0 +1,6 @@
+konstante i123: dezimalzahl = 100;
+
+definiere haupt(): void {
+    i123 = i123 + i123;
+    drucke(i123);
+}
