@@ -37,7 +37,10 @@ tasks {
         )
     }
 
-
+    compileJava {
+        dependsOn(generateGrammarSource)
+    }
+    
     test {
         useJUnitPlatform()
     }
