@@ -22,6 +22,7 @@ import java.util.Arrays;
 public class Main {
     static boolean tree = false;
     static boolean pretty = true;
+    static String plattform = "mac";
 
     public static void compile(String className, Reader in) throws IOException {
         var lexer = new almanLexer(CharStreams.fromReader(in));
@@ -46,7 +47,7 @@ public class Main {
         ast.functionDefinitions.forEach(fd -> fd.welcome(new MarkTailCall()));
 
         // JBC oder Assembly generieren
-        ast.welcome(new GenAssembly(className));
+        ast.welcome(new GenAssembly(className, plattform));
 
         // Treeansicht generieren
         if (tree) {
@@ -84,6 +85,9 @@ public class Main {
             }
             if (arg.equals("--no-pretty-printer")) {
                 pretty = false;
+            }
+            if (arg.equals("--linux")) {
+                plattform = "linux";
             }
         }
         for (var arg : args) {

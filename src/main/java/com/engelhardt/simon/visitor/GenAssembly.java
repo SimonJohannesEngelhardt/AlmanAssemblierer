@@ -27,10 +27,14 @@ public class GenAssembly implements Visitor {
     int next = 0;
     Map<String, String> stringsToWrite = new HashMap<>();
     private int tailCallOptimizationID;
+    boolean compileForMac = true;
 
-    public GenAssembly(String programName) {
+    public GenAssembly(String programName, String plattform) {
         this.filename = programName;
         this.programName = programName.substring(programName.lastIndexOf(File.separator) + 1);
+        if (plattform.equals("linux")) {
+            compileForMac = false;
+        }
     }
 
     int next() {
@@ -194,13 +198,13 @@ public class GenAssembly implements Visitor {
     public void visit(FunctionDefinition functionDefinition) {
         //.globl  <functionName>
         write("\t.globl\t");
-        write("_" + functionDefinition.name);
+        write((compileForMac ? "_" : "") + functionDefinition.name);
         // .type <functionName>, @function
         //write(".type\t");
         //write("_" + functionDefinition.name);
         //write(", @function");
         // <functionName>:
-        write("\n_" + functionDefinition.name + ":");
+        write("\n" + (compileForMac ? "_" : "") + functionDefinition.name + ":");
         // Basepointer auf den Stack pushen
         nl();
         write("pushq\t%rbp");
@@ -363,13 +367,7 @@ public class GenAssembly implements Visitor {
         prog.functionDefinitions.forEach(fd -> functions.put(fd.name, fd));
         // Dann erst den Körper aufrufen, sonst funktioniert ein Aufruf in vorheriger Funktion nicht
         prog.functionDefinitions.forEach(fd -> fd.welcome(this));
-        write("""
-                	.section	__TEXT,__cstring,cstring_literals
-                L_.str:                                 ## @.str
-                	.asciz	"%ld\\n"
-                
-                .subsections_via_symbols
-                """);
+        write(".asciz\"%ld\\n\"");
         try {
             write("\n");
             out.close();
@@ -443,7 +441,7 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("leaq\tL_.str(%rip), %rdi");
                 nl();
-                write("callq\t _printf");
+                write("callq\t " + (compileForMac ? "_" : "") + "printf");
                 nl();
                 write("addq\t$16, %rsp");
                 nl();
@@ -451,7 +449,7 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("retq");
             }
-            case "eingabe" -> System.out.println("Eingabe");
+            case "eingabe" -> System.out.println("Eingabe"); //TODO
             default ->
                     throw new UnsupportedOperationException("Kenne diese Bibliotheksfunktion nicht");
         }
