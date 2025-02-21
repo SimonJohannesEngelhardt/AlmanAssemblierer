@@ -356,13 +356,25 @@ public class GenAssembly implements Visitor {
 
         // Global Vars
         globalVars = new HashMap<>();
+        if (compileForMac) {
+            write(".section __DATA,__data\n");
+        } else {
+            write(".section .data");
+        }
+        
         prog.variableDecls.forEach(variableDecl -> {
             globalVars.put(variableDecl.varName, variableDecl);
             variableDecl.welcome(this);
         });
         write("\n");
 
+        // Funktionen
         functions = new HashMap<>();
+        if (compileForMac) {
+            write(".section __TEXT,__text\n");
+        } else {
+            write(".section .text\n");
+        }
         // Zuerst alle Funktionen registrieren
         prog.functionDefinitions.forEach(fd -> functions.put(fd.name, fd));
         // Dann erst den Körper aufrufen, sonst funktioniert ein Aufruf in vorheriger Funktion nicht
@@ -443,7 +455,7 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("leaq\tL_.str(%rip), %rdi");
                 nl();
-                write("callq\t " + (compileForMac ? "_" : "") + "printf");
+                write("callq\t" + (compileForMac ? "_" : "") + "printf");
                 nl();
                 write("addq\t$16, %rsp");
                 nl();
