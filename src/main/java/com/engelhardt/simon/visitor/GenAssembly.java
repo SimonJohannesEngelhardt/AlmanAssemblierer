@@ -359,7 +359,7 @@ public class GenAssembly implements Visitor {
         if (compileForMac) {
             write(".section __DATA,__data\n");
         } else {
-            write(".section .data");
+            write(".section .data\n");
         }
 
         prog.variableDecls.forEach(variableDecl -> {
@@ -388,7 +388,7 @@ public class GenAssembly implements Visitor {
         write("L_.str:");
         nl();
         write(".asciz\t\"%ld\\n\"");
-        
+
         write("\n"); // Last line
         try {
             out.close();
