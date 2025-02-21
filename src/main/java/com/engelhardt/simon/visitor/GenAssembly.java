@@ -427,7 +427,7 @@ public class GenAssembly implements Visitor {
             write("jmp .LStart" + tailCallOptimizationID);
         }
         nl();
-        write("call\t_" + functionCall.functionName);
+        write("call\t" + (compileForMac ? "_" : "") + functionCall.functionName);
     }
 
     private void callLibraryFunction(FunctionCall call) {
