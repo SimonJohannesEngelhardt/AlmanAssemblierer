@@ -367,6 +367,8 @@ public class GenAssembly implements Visitor {
         prog.functionDefinitions.forEach(fd -> functions.put(fd.name, fd));
         // Dann erst den Körper aufrufen, sonst funktioniert ein Aufruf in vorheriger Funktion nicht
         prog.functionDefinitions.forEach(fd -> fd.welcome(this));
+        write("L_.str:");
+        nl();
         write(".asciz\"%ld\\n\"");
         try {
             write("\n");
