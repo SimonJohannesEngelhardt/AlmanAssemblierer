@@ -30,8 +30,8 @@ public interface Visitor {
     void visit(BreakStatement breakStatement);
 
     void visit(VarAssignment varAssignment);
-    
+
     default void reportError(int line, int column, String message) {
-        System.err.println(STR."Error at (\{line},\{column}): \{message}");
+        System.err.println("Error at (" + line + "," + column + "): " + message);
     }
 }

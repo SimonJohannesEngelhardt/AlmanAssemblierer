@@ -21,7 +21,6 @@ dependencies {
     testImplementation("org.mockito:mockito-core:3.+")
 }
 
-val ENABLE_PREVIEW = "--enable-preview"
 
 tasks {
     val generateGrammarSource by registering(JavaExec::class) {
@@ -38,33 +37,8 @@ tasks {
         )
     }
 
-    compileJava {
-        options.compilerArgs.add(ENABLE_PREVIEW)
-
-        options.compilerArgs.add("-Xlint:none")
-        options.compilerArgs.add("-nowarn")
-
-        options.release.set(22)
-    }
 
     test {
         useJUnitPlatform()
-        jvmArgs(ENABLE_PREVIEW)
-    }
-    javadoc {
-        exclude("com/engelhardt/simon/antlr/**")
-    }
-
-}
-tasks.withType<JavaCompile>().all {
-    options.compilerArgs.add(ENABLE_PREVIEW)
-}
-tasks.named<JavaExec>("run") {
-    jvmArgs(ENABLE_PREVIEW)
-}
-tasks.withType<Javadoc>().configureEach {
-    (options as StandardJavadocDocletOptions).apply {
-        addBooleanOption("-enable-preview", true)
-        source = "22"
     }
 }

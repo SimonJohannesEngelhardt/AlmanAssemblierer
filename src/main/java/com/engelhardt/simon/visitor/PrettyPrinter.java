@@ -24,14 +24,14 @@ public class PrettyPrinter implements Visitor {
 
     @Override
     public void visit(IntLiteral intLiteral) {
-        write(STR."\{intLiteral.n}");
+        write("" + intLiteral.n);
     }
 
     @Override
     public void visit(OpExpr opExpr) {
         if (opExpr.attribute.parenthesis) write("(");
         opExpr.left.welcome(this);
-        write(STR." \{opExpr.operator.image} ");
+        write(" " + opExpr.operator.image + " ");
         opExpr.right.welcome(this);
         if (opExpr.attribute.parenthesis) write(")");
 
@@ -177,7 +177,7 @@ public class PrettyPrinter implements Visitor {
 
     @Override
     public void visit(VarAssignment varAssignment) {
-        write(STR."\{varAssignment.varName} = ");
+        write(varAssignment.varName + " = ");
         varAssignment.expr.welcome(this);
     }
 

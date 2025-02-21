@@ -3,7 +3,6 @@ package com.engelhardt.simon.visitor;
 import com.engelhardt.simon.ast.*;
 import com.engelhardt.simon.utils.Type;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,17 +53,17 @@ public class TypeCheckVisitor implements Visitor {
         if (opExpr.operator.isLogical()) {
             opExpr.theType = Type.BOOLEAN_TYPE;
             if (!opExpr.left.theType.equals(Type.BOOLEAN_TYPE) || !opExpr.right.theType.equals(Type.BOOLEAN_TYPE)) {
-                reportError(opExpr.line, opExpr.column, STR."Wrong type in boolean operand. \{opExpr.left.theType.name()} != \{opExpr.right.theType.name()}");
+                reportError(opExpr.line, opExpr.column, "Wrong type in boolean operand. " + opExpr.left.theType.name() + " != " + opExpr.right.theType.name());
             }
         } else if (opExpr.operator.isArithmetic()) {
             opExpr.theType = Type.LONG_TYPE;
             if (!opExpr.left.theType.equals(Type.LONG_TYPE) || !opExpr.right.theType.equals(Type.LONG_TYPE)) {
-                reportError(opExpr.line, opExpr.column, STR."Wrong type in arithmetic operand. \{opExpr.left.theType.name()} != \{opExpr.right.theType.name()}");
+                reportError(opExpr.line, opExpr.column, "Wrong type in arithmetic operand. " + opExpr.left.theType.name() + " != " + opExpr.right.theType.name());
             }
         } else if (opExpr.operator.isComparison()) {
             opExpr.theType = Type.BOOLEAN_TYPE;
             if (!opExpr.left.theType.equals(Type.LONG_TYPE) || !opExpr.right.theType.equals(Type.LONG_TYPE)) {
-                reportError(opExpr.line, opExpr.column, STR."Wrong type in comparison operand. \{opExpr.left.theType.name()} != \{opExpr.right.theType.name()}");
+                reportError(opExpr.line, opExpr.column, "Wrong type in comparison operand. " + opExpr.left.theType.name() + " != " + opExpr.right.theType.name());
             }
         }
     }
@@ -73,7 +72,7 @@ public class TypeCheckVisitor implements Visitor {
     public void visit(Variable var) {
         Type type = env.getOrDefault(var.name, globalVars.getOrDefault(var.name, null));
         if (type == null) {
-            reportError(var.line, var.column, STR."Unknown variable \{var.name}");
+            reportError(var.line, var.column, "Unknown variable " + var.name);
         } else {
             var.theType = type;
         }
@@ -86,11 +85,8 @@ public class TypeCheckVisitor implements Visitor {
             reportError(
                     returnStatement.line,
                     returnStatement.column,
-                    STR."""
-                    Return statement mismatch:
-                        Function Type: \{currentFunction.theType.name()}
-                        Return Type: \{returnStatement.expr.theType.name()}
-                    """
+                    "Return statement mismatch:\nFunction Type: " + currentFunction.theType.name() + "\nReturn Type: " + returnStatement.expr.theType.name()
+
             );
         }
         returnStatement.theType = currentFunction.theType;
@@ -120,7 +116,7 @@ public class TypeCheckVisitor implements Visitor {
         if (functionCall.functionName.equals("drucke")) {
             functionCall.theType = Type.VOID_TYPE;
         } else if (function == null) {
-            reportError(functionCall.line, functionCall.column, STR."Unknown function \{functionCall.functionName}");
+            reportError(functionCall.line, functionCall.column, "Unknown function " + functionCall.functionName);
         } else if (functionCall.args.size() != function.parameters.size()) {
             reportError(functionCall.line, functionCall.column, "Function call mismatch. Wrong number of arguments.");
             functionCall.theType = Type.of(function.resultType);
