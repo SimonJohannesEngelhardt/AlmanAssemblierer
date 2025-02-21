@@ -361,7 +361,7 @@ public class GenAssembly implements Visitor {
         } else {
             write(".section .data");
         }
-        
+
         prog.variableDecls.forEach(variableDecl -> {
             globalVars.put(variableDecl.varName, variableDecl);
             variableDecl.welcome(this);
@@ -379,11 +379,18 @@ public class GenAssembly implements Visitor {
         prog.functionDefinitions.forEach(fd -> functions.put(fd.name, fd));
         // Dann erst den Körper aufrufen, sonst funktioniert ein Aufruf in vorheriger Funktion nicht
         prog.functionDefinitions.forEach(fd -> fd.welcome(this));
+
+        if (compileForMac) {
+            write(".section __TEXT,__cstring\n");
+        } else {
+            write(".section .rodata\n");
+        }
         write("L_.str:");
         nl();
         write(".asciz\t\"%ld\\n\"");
+        
+        write("\n"); // Last line
         try {
-            write("\n");
             out.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
