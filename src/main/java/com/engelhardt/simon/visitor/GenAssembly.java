@@ -369,7 +369,7 @@ public class GenAssembly implements Visitor {
         prog.functionDefinitions.forEach(fd -> fd.welcome(this));
         write("L_.str:");
         nl();
-        write(".asciz\"%ld\\n\"");
+        write(".asciz\t\"%ld\\n\"");
         try {
             write("\n");
             out.close();
@@ -447,7 +447,7 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("addq\t$16, %rsp");
                 nl();
-                write("popq %rbp");
+                write("popq\t%rbp");
                 nl();
                 write("retq");
             }
