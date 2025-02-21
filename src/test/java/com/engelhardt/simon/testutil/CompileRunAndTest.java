@@ -14,30 +14,31 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CompileRunAndTest {
     public static void testDirectory(String folder) throws IOException, InterruptedException {
-        File almnDir = new File(STR."src/test/resources/\{folder}");
+        File almnDir = new File("src/test/resources/" + folder);
         File[] almnFiles = almnDir.listFiles(((_, name) -> name.endsWith(".almn")));
-
         if (almnFiles == null) {
             throw new IOException("Couldn't find files");
         }
+
         for (File almnFile : almnFiles) {
             String baseName = almnFile.getName().replace(".almn", "");
-            String outputDirectoryAndName = STR."\{almnDir}/\{baseName}";
-            String expectedOutput = new String(Files.readAllBytes(Paths.get(STR."\{outputDirectoryAndName}.exp")));
+            String outputDirectoryAndName = almnDir + "/" + baseName;
+            String expectedOutput = new String(Files.readAllBytes(Paths.get(outputDirectoryAndName + ".exp")));
 
 
             // Compile the .almn file
             Main.main(new String[]{almnFile.getPath(), "--no-pretty-printer"});
 
             // Compile the assembly code with helper.c
-            Process gccProcess = new ProcessBuilder("arch", "-x86_64", "gcc", STR."\{outputDirectoryAndName}.s", STR."\{outputDirectoryAndName}.c", "-o", outputDirectoryAndName).start();
+            Process gccProcess = new ProcessBuilder("arch", "-x86_64", "gcc", outputDirectoryAndName + ".s", "-o", outputDirectoryAndName).start();
             if (gccProcess.waitFor() != 0) {
+                gccProcess.errorReader().lines().forEach(System.out::println);
                 throw new RuntimeException("Couldn't compile");
             }
 
 
             // Run the compiled output
-            ProcessBuilder pb = new ProcessBuilder(STR."\{almnDir}/\{baseName}");
+            ProcessBuilder pb = new ProcessBuilder(outputDirectoryAndName);
             pb.redirectErrorStream(true);
             Process process = pb.start();
 
