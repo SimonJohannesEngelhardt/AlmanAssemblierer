@@ -69,7 +69,7 @@ expr returns [AST result]:
     ;
 
 functionCall returns [AST result]:
-    ID LPAR exprList RPAR
+    ID LPAR exprList? RPAR
     ;
 
 exprList: expr (COMMA expr)*; // arg list
