@@ -56,6 +56,5 @@ public class CompileRunAndTest {
             var received = output.toString().split("\n");
             assertArrayEquals(expected, received);
         }
-
     }
 }

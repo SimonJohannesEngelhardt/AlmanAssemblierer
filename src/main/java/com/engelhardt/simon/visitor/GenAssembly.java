@@ -26,8 +26,8 @@ public class GenAssembly implements Visitor {
     // Counter for unique labels
     int next = 0;
     Map<String, String> stringsToWrite = new HashMap<>();
-    private int tailCallOptimizationID;
     boolean compileForMac = true;
+    private int tailCallOptimizationID;
 
     public GenAssembly(String programName, String plattform) {
         this.filename = programName;
@@ -191,7 +191,6 @@ public class GenAssembly implements Visitor {
         write("popq\t%rbp");
         nl();
         write("ret");
-
     }
 
     @Override
@@ -231,7 +230,8 @@ public class GenAssembly implements Visitor {
         write("subq\t$" + argsStackSize + ", %rsp");
 
 
-        // übrige Parameter auch in die env schreiben
+        // Parameter, die nicht in Register passen, liegen schon auf dem Stack
+        // und werden nur noch in die env aufgenommen
         sp = 16;
         for (int i = registers.length; i < functionDefinition.parameters.size(); i++) {
             env.put(functionDefinition.parameters.get(i).name, sp);
@@ -244,23 +244,28 @@ public class GenAssembly implements Visitor {
             nl();
             write("movq\t" + registers[i] + ", " + sp + "(%rbp)");
             env.put(functionDefinition.parameters.get(i).name, sp);
-            sp = sp - 8;
+            sp -= 8;
         }
 
         // Block generieren
         functionDefinition.block.welcome(this);
+
         // Falls noch nicht returned wurde, hier returnen
-        nl();
-        write("movq\t%rbp, %rsp");
-        nl();
-        write("popq\t%rbp");
-        nl();
-        write("ret");
+        if (functionDefinition.block.statements.stream().noneMatch(s -> s instanceof ReturnStatement)) {
+            nl();
+            write("movq\t$0, %rax");
+            nl();
+            write("movq\t%rbp, %rsp");
+            nl();
+            write("popq\t%rbp");
+            nl();
+            write("ret");
+        }
 
         // Umgebung zurücksetzen
         env = oldEnv;
 
-        write("\n");
+        write("\n\n");
     }
 
     @Override
@@ -294,11 +299,11 @@ public class GenAssembly implements Visitor {
             switch (variableDecl.theType.name()) {
                 case Type.long_type -> {
                     nl();
-                    long value = intLiteral.n;
-                    write(".quad " + value);
+                    write(".quad " + intLiteral.n);
                     globalVars.put(variableDecl.varName, variableDecl);
                 }
-                case Type.double_type -> throw new UnsupportedOperationException("Type Double");
+                case Type.double_type ->
+                        throw new UnsupportedOperationException("Type Double not supported");
                 default ->
                         throw new UnsupportedOperationException("Keine weiteren Typen bisher unterstützt.");
             }
@@ -452,10 +457,6 @@ public class GenAssembly implements Visitor {
     private void callLibraryFunction(FunctionCall call) {
         switch (call.functionName) {
             case "drucke" -> {
-                nl();
-                write("subq\t$16, %rsp");
-                nl();
-                write("movq\t%rdi, -8(%rbp)");
                 call.args.getFirst().welcome(this);
                 nl();
                 write("movq\t%rax, %rsi");
@@ -463,12 +464,6 @@ public class GenAssembly implements Visitor {
                 write("leaq\tL_.str(%rip), %rdi");
                 nl();
                 write("callq\t" + (compileForMac ? "_" : "") + "printf");
-                nl();
-                write("addq\t$16, %rsp");
-                nl();
-                write("popq\t%rbp");
-                nl();
-                write("retq");
             }
             case "eingabe" -> System.out.println("Eingabe"); //TODO
             default ->

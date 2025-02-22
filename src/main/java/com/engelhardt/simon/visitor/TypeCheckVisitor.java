@@ -37,6 +37,9 @@ public class TypeCheckVisitor implements Visitor {
             env.put(param.name, type);
             param.theType = type;
         }).toList();
+        if (functionDefinition.theType != Type.VOID_TYPE && functionDefinition.block.statements.stream().noneMatch(s -> s instanceof ReturnStatement)) {
+            reportError(functionDefinition.line, functionDefinition.column, "You have to return a value of type: " + functionDefinition.theType);
+        }
 
         functionDefinition.block.welcome(this);
     }

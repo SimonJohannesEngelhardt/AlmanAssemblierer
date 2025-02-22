@@ -157,8 +157,10 @@ public class BuildTree extends almanBaseListener {
         int line = ctx.getStart().getLine();
         int column = ctx.getStart().getCharPositionInLine();
         var args = new ArrayList<AST>();
-        for (var expr : ctx.exprList().expr()) {
-            args.add(expr.result);
+        if (ctx.exprList() != null) {
+            for (var expr : ctx.exprList().expr()) {
+                args.add(expr.result);
+            }
         }
         ctx.result = new FunctionCall(line, column, ctx.ID().getText(), args);
     }
