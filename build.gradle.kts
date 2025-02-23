@@ -1,6 +1,7 @@
 plugins {
     java
     application
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 application {
@@ -17,6 +18,7 @@ repositories {
 
 dependencies {
     implementation("org.antlr:antlr4:4.11.1")
+    implementation("net.sourceforge.argparse4j:argparse4j:0.9.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     testImplementation("org.mockito:mockito-core:3.+")
 }
@@ -40,8 +42,14 @@ tasks {
     compileJava {
         dependsOn(generateGrammarSource)
     }
-    
+
     test {
         useJUnitPlatform()
+    }
+
+    shadowJar {
+        manifest {
+            attributes["Main-Class"] = application.mainClass.get()
+        }
     }
 }

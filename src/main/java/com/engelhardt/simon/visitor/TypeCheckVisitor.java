@@ -24,7 +24,6 @@ public class TypeCheckVisitor implements Visitor {
         // Functions
         prog.functionDefinitions.forEach(fd -> functions.put(fd.name, fd));
         prog.functionDefinitions.forEach(fd -> fd.welcome(this));
-
     }
 
     @Override

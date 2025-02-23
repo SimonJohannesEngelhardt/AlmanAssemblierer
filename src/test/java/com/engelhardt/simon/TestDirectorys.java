@@ -8,6 +8,6 @@ import java.io.IOException;
 public class TestDirectorys {
     @Test
     public void testGod() throws IOException, InterruptedException {
-        CompileRunAndTest.testDirectory("god");
+        CompileRunAndTest.testDirectory("maintest");
     }
 }

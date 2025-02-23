@@ -7,6 +7,8 @@ import com.engelhardt.simon.visitor.GenAssembly;
 import com.engelhardt.simon.visitor.MarkTailCall;
 import com.engelhardt.simon.visitor.PrettyPrinter;
 import com.engelhardt.simon.visitor.TypeCheckVisitor;
+import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.inf.*;
 import org.antlr.v4.gui.TreeViewer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -19,9 +21,12 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Arrays;
 
+import static java.lang.System.exit;
+import static net.sourceforge.argparse4j.impl.Arguments.storeTrue;
+
 public class Main {
     static boolean tree = false;
-    static boolean pretty = true;
+    static boolean pretty = false;
     static String plattform = "mac";
 
     public static void compile(String className, Reader in) throws IOException {
@@ -61,6 +66,7 @@ public class Main {
         TreeViewer viewer = new TreeViewer(Arrays.asList(
                 parser.getRuleNames()), antlrTree);
         viewer.setScale(1.5); // Scale a little
+        viewer.setAutoscrolls(true);
         panel.add(viewer);
         frame.add(panel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -69,30 +75,36 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException {
-        if (args.length == 0) {
-            System.err.println("""
-                            Usage: java -jar L1.jar <file>
-                            Options:
-                            \t--enable-tree-view : Show the tree view of the parsed file
-                            \t--no-pretty-printer
-                    """);
-            System.exit(1);
-        }
-        for (var arg : args) {
-            if (arg.equals("--enable-tree-view")) {
-                tree = true;
-                args = Arrays.stream(args).filter(s -> !s.equals("--enable-tree-view")).toArray(String[]::new);
-            }
-            if (arg.equals("--no-pretty-printer")) {
-                pretty = false;
-            }
-            if (arg.equals("--linux")) {
-                plattform = "linux";
-            }
-        }
-        for (var arg : args) {
-            compile(arg.substring(0, arg.lastIndexOf('.')), new FileReader(arg));
-            break; // TODO später hier mehrere Dateien angeben
+        ArgumentParser parser = ArgumentParsers.newFor("Main").build()
+                .description("Kompiliere eine .almn Datei zu x86 Assembly");
+        parser.addArgument("file")
+                .metavar("FILE")
+                .help("Die zu kompilierende Datei");
+        parser.addArgument("--tree-view")
+                .dest("tree")
+                .action(storeTrue())
+                .setDefault(false)
+                .help("Zeigt eine grafische Baumansicht der Sprache an");
+        parser.addArgument("--pretty-printer")
+                .dest("pretty")
+                .action(storeTrue())
+                .setDefault(false)
+                .help("Gibt den Code in einer schönen Form aus");
+        parser.addArgument("--linux")
+                .dest("plattform")
+                .action(storeTrue())
+                .setDefault("mac")
+                .help("Kompiliert den Code für Linux");
+        try {
+            Namespace res = parser.parseArgs(args);
+            tree = res.getBoolean("tree");
+            pretty = res.getBoolean("pretty");
+            plattform = res.getString("plattform");
+            String file = res.getString("file");
+            System.out.println(file);
+            compile(file.substring(0, file.lastIndexOf('.')), new FileReader(file));
+        } catch (ArgumentParserException e) {
+            parser.handleError(e);
         }
     }
 }
