@@ -26,8 +26,6 @@ public class MarkTailCall implements Visitor {
             if (fc.functionName.equals(currentFunctionDefinition.name)) {
                 fc.attribute.isTailCall = true;
                 currentFunctionDefinition.attribute.hasTailCall = true;
-                System.out.println(currentFunctionDefinition.name + " has tail call");
-
             }
         }
     }

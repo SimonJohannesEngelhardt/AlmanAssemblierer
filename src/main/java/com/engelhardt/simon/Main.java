@@ -100,7 +100,6 @@ public class Main {
             pretty = res.getBoolean("pretty");
             plattform = res.getString("plattform");
             String file = res.getString("file");
-            System.out.println(file);
             compile(file.substring(0, file.lastIndexOf('.')), new FileReader(file));
         } catch (ArgumentParserException e) {
             parser.handleError(e);

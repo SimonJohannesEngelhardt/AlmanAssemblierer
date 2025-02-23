@@ -1,8 +1,6 @@
 package com.engelhardt.simon.ast;
 
 import com.engelhardt.simon.antlr.almanParser;
-import com.engelhardt.simon.ast.*;
-import com.engelhardt.simon.ast.Operator;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +47,29 @@ public class BuildTreeTest {
             assertEquals(1, result.line);
             assertEquals(0, result.column);
             assertEquals(42L, result.n);
+        }
+    }
+
+    @Nested
+    class ExitString {
+        @Test
+        public void shouldCreateAStringLiteral() {
+            // Mock everything
+            var ctx = mock(almanParser.StringContext.class);
+            when(ctx.getStart()).thenReturn(startToken);
+
+            when(ctx.STRING()).thenReturn(mock(TerminalNode.class));
+            when(ctx.STRING().getText()).thenReturn("\"Hello, World!\"");
+
+            // Call the method to test
+            buildTree.exitString(ctx);
+
+            // Verify the result
+            assertNotNull(ctx.result);
+            StringLiteral result = ctx.result;
+            assertEquals(1, result.line);
+            assertEquals(0, result.column);
+            assertEquals("Hello, World!", result.s);
         }
     }
 

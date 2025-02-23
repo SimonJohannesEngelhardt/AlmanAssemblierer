@@ -1,6 +1,11 @@
 konstante i123: dezimalzahl = 100;
 
 definiere haupt(): void {
-    i123 = i123 + i123;
-    drucke(i123);
+    lasse i: dezimalzahl  = 20;
+    waehrend(i > 0) {
+        drucke("%d\n", i);
+        i = i - 2;
+    }
+    i123 = 200;
+    drucke("%d\n", i123);
 }

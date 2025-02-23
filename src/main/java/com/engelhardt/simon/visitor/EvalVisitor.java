@@ -24,7 +24,6 @@ public class EvalVisitor implements Visitor {
             case mod -> result = l % r;
             default -> throw new UnsupportedOperationException("Not supported yet.");
         }
-
     }
 
     @Override

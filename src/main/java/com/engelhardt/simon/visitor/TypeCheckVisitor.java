@@ -11,6 +11,7 @@ public class TypeCheckVisitor implements Visitor {
     Map<String, Type> globalVars;
     Map<String, FunctionDefinition> functions;
     FunctionDefinition currentFunction = null;
+    String[] libraryFunctions = {"drucke"};
 
     @Override
     public void visit(Prog prog) {
@@ -37,7 +38,7 @@ public class TypeCheckVisitor implements Visitor {
             param.theType = type;
         }).toList();
         if (functionDefinition.theType != Type.VOID_TYPE && functionDefinition.block.statements.stream().noneMatch(s -> s instanceof ReturnStatement)) {
-            reportError(functionDefinition.line, functionDefinition.column, "Ein Wert vom Typ " + functionDefinition.theType.name() + " muss zurückgeben werden.");
+            //TODO reportError(functionDefinition.line, functionDefinition.column, "Ein Wert vom Typ " + functionDefinition.theType.name() + " muss zurückgeben werden.");
         }
 
         functionDefinition.block.welcome(this);
@@ -128,7 +129,16 @@ public class TypeCheckVisitor implements Visitor {
 
     @Override
     public void visit(FunctionCall functionCall) {
-        //TODO verify library calls
+        // Verify library call
+        if (functionCall.functionName.equals("drucke")) {
+            functionCall.theType = Type.VOID_TYPE;
+            functionCall.args.forEach(arg -> arg.welcome(this));
+            if (!(functionCall.args.getFirst() instanceof StringLiteral)) {
+                reportError(functionCall.line, functionCall.column, "Der erste Parameter von drucken muss ein String sein.");
+            }
+            return;
+        }
+
         functionCall.args.forEach(arg -> arg.welcome(this));
         FunctionDefinition function = functions.get(functionCall.functionName);
         if (functionCall.functionName.equals("drucke")) {
@@ -172,8 +182,14 @@ public class TypeCheckVisitor implements Visitor {
     @Override
     public void visit(VarAssignment varAssignment) {
         varAssignment.expr.welcome(this);
-        if (!varAssignment.theType.equals(varAssignment.expr.theType)) {
-            reportError(varAssignment.line, varAssignment.column, "Assignment mismatch. " + varAssignment.theType.name() + " != " + varAssignment.expr.theType.name());
+        Type varType = env.getOrDefault(varAssignment.varName, globalVars.getOrDefault(varAssignment.varName, null));
+        if (varType == null) {
+            reportError(varAssignment.line, varAssignment.column, "Unbekannte variable " + varAssignment.varName);
+            return;
         }
+        if (!varAssignment.expr.theType.equals(varType)) {
+            reportError(varAssignment.line, varAssignment.column, "Zuweisungsfehler: " + varAssignment.expr.theType.name() + " != " + varType.name());
+        }
+
     }
 }

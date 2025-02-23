@@ -15,7 +15,7 @@ public class BuildTree extends almanBaseListener {
 
     @Override
     public void exitString(almanParser.StringContext ctx) {
-        ctx.result = new StringLiteral(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(), ctx.getText().substring(1, ctx.getText().length() - 1));
+        ctx.result = new StringLiteral(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(), ctx.STRING().getText().substring(1, ctx.STRING().getText().length() - 1));
     }
 
     @Override

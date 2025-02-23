@@ -79,6 +79,8 @@ zahl returns [ IntLiteral result]: NUMBER;
 string returns [ StringLiteral result]: STRING;
 
 NUMBER : [0-9]+;
+
+// Liest Strings ein, die von Anführungszeichen umschlossen sind. Erlaubt es auch, Anführungszeichen durch Escapen innerhalb des Strings zu verwenden.
 STRING: '"' (~["\\] | '\\' .)* '"'
       | '\'' (~['\\] | '\\' .)* '\'';
 PLUS : '+';
