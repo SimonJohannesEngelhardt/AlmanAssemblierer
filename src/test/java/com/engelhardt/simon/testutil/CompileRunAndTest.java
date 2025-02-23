@@ -27,7 +27,7 @@ public class CompileRunAndTest {
 
 
             // Compile the .almn file
-            Main.main(new String[]{almnFile.getPath(), "--no-pretty-printer"});
+            Main.main(new String[]{almnFile.getPath()});
 
             // Compile the assembly code with helper.c
             Process gccProcess = new ProcessBuilder("arch", "-x86_64", "gcc", outputDirectoryAndName + ".s", "-o", outputDirectoryAndName).start();

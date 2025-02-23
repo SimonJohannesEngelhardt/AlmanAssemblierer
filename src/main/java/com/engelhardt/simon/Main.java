@@ -21,7 +21,6 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Arrays;
 
-import static java.lang.System.exit;
 import static net.sourceforge.argparse4j.impl.Arguments.storeTrue;
 
 public class Main {
