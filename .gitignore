@@ -48,4 +48,4 @@ antlr/
 ### Generated Files
 *.s
 *.out
-**/*.dSYM.Contents/
+*.dYSM/
