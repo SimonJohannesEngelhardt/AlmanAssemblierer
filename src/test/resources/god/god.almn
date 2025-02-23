@@ -77,8 +77,29 @@ definiere fib(n: dezimalzahl): dezimalzahl {
 }
 
 definiere haupt(): dezimalzahl {
-    i123 = i123;
-    drucke(i123);
+    drucke("%d\n", f42());
+    drucke("%d\n", f6(1,2,3,4,5,6,7));
+    drucke("%d\n", f7(1,2,3,4,5,6,7));
+    drucke("%d\n", g1(1,2,3,4,5,6,7,8,9));
+    drucke("%d\n", g9(1,2,3,4,5,6,7,8,9));
+    drucke("%d\n", f1(3,3,3));
+    drucke("%d\n", f1(200,4,3));
+    drucke("%d\n", whileLoop(200));
+    drucke("%d\n", fakultaet(6));
+    drucke("%d\n", fakultaet(2));
+    drucke("%d\n", fakultaet(1));
+    drucke("%d\n", fakultaet(0));
+    drucke("%d\n", fakultaetRecursive(6));
+    drucke("%d\n", fakultaetRecursive(0));
+    drucke("%d\n", fakultaetIt(6));
+    drucke("%d\n", fakultaetAux(1, 6));
+    drucke("%d\n", fakultaetAux(1, 7));
+    drucke("%d\n", fakultaetAux1(1,7));
+    drucke("%d\n", fib(0));
+    drucke("%d\n", fib(3));
+    drucke("%d\n", fib(4));
+    drucke("%d\n", fib(5));
+    drucke("%d\n", fib(6));
 }
 
 

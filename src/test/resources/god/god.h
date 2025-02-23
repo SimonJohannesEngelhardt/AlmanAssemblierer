@@ -11,4 +11,3 @@ long fakultaetIt(long n);
 long fakultaetAux(long r, long n);
 long fakultaetAux1(long r, long n);
 long fib(long n);
-long main();
