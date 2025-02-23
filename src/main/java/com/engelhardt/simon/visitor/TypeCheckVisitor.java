@@ -38,7 +38,7 @@ public class TypeCheckVisitor implements Visitor {
             param.theType = type;
         }).toList();
         if (functionDefinition.theType != Type.VOID_TYPE && functionDefinition.block.statements.stream().noneMatch(s -> s instanceof ReturnStatement)) {
-            reportError(functionDefinition.line, functionDefinition.column, "You have to return a value of type: " + functionDefinition.theType);
+            reportError(functionDefinition.line, functionDefinition.column, "Ein Wert vom Typ " + functionDefinition.theType.name() + " muss zurückgeben werden.");
         }
 
         functionDefinition.block.welcome(this);
@@ -50,9 +50,24 @@ public class TypeCheckVisitor implements Visitor {
     }
 
     @Override
+    public void visit(StringLiteral stringLiteral) {
+        stringLiteral.theType = Type.STRING_TYPE;
+    }
+
+    @Override
     public void visit(OpExpr opExpr) {
         opExpr.left.welcome(this);
+        if (opExpr.left.theType.equals(Type.STRING_TYPE)) {
+            reportError(opExpr.left.line, opExpr.left.column, "Operations on strings not supported");
+            return;
+        }
+
         opExpr.right.welcome(this);
+        if (opExpr.right.theType.equals(Type.STRING_TYPE)) {
+            reportError(opExpr.right.line, opExpr.right.column, "Operations on strings not supported");
+            return;
+        }
+
         if (opExpr.operator.isLogical()) {
             opExpr.theType = Type.BOOLEAN_TYPE;
             if (!opExpr.left.theType.equals(Type.BOOLEAN_TYPE) || !opExpr.right.theType.equals(Type.BOOLEAN_TYPE)) {
@@ -114,6 +129,7 @@ public class TypeCheckVisitor implements Visitor {
 
     @Override
     public void visit(FunctionCall functionCall) {
+        //TODO verify library calls
         functionCall.args.forEach(arg -> arg.welcome(this));
         FunctionDefinition function = functions.get(functionCall.functionName);
         if (functionCall.functionName.equals("drucke")) {
@@ -137,7 +153,6 @@ public class TypeCheckVisitor implements Visitor {
 
     @Override
     public void visit(WhileStatement whileStatement) {
-
     }
 
     @Override
@@ -157,12 +172,9 @@ public class TypeCheckVisitor implements Visitor {
 
     @Override
     public void visit(VarAssignment varAssignment) {
-
+        varAssignment.expr.welcome(this);
+        if (!varAssignment.theType.equals(varAssignment.expr.theType)) {
+            reportError(varAssignment.line, varAssignment.column, "Assignment mismatch. " + varAssignment.theType.name() + " != " + varAssignment.expr.theType.name());
+        }
     }
-
-    @Override
-    public void reportError(int line, int column, String message) {
-        Visitor.super.reportError(line, column, message);
-    }
-
 }

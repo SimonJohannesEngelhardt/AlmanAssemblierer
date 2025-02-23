@@ -31,7 +31,10 @@ public interface Visitor {
 
     void visit(VarAssignment varAssignment);
 
+    void visit(StringLiteral stringLiteral);
+
     default void reportError(int line, int column, String message) {
         System.err.println("Error at (" + line + "," + column + "): " + message);
     }
+
 }

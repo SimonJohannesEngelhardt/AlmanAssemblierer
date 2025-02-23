@@ -14,12 +14,19 @@ public class BuildTree extends almanBaseListener {
     }
 
     @Override
+    public void exitString(almanParser.StringContext ctx) {
+        ctx.result = new StringLiteral(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(), ctx.getText().substring(1, ctx.getText().length() - 1));
+    }
+
+    @Override
     public void exitExpr(almanParser.ExprContext ctx) {
         int line = ctx.getStart().getLine();
         int column = ctx.getStart().getCharPositionInLine();
 
         if (ctx.zahl() != null) {
             ctx.result = ctx.zahl().result;
+        } else if (ctx.string() != null) {
+            ctx.result = ctx.string().result;
         } else if (ctx.PLUS() != null) {
             ctx.result = new OpExpr(
                     line,
@@ -291,7 +298,7 @@ public class BuildTree extends almanBaseListener {
                 ctx.getStart().getCharPositionInLine(),
                 ctx.statement().stream().filter(statement -> statement.varDecl() != null).map(statementContext -> statementContext.varDecl().result).toList(),
                 ctx.functionDefinition().stream().map(definition -> definition.result).toList(),
-                ctx.statement().stream().map(statement -> statement.result).toList()
+                ctx.statement().stream().filter(statement -> statement.varDecl() == null).map(statement -> statement.result).toList()
         );
     }
 }

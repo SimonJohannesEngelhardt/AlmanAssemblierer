@@ -28,6 +28,7 @@ public class GenAssembly implements Visitor {
     Map<String, String> stringsToWrite = new HashMap<>();
     boolean compileForMac = true;
     private int tailCallOptimizationID;
+    StringBuilder output;
 
     public GenAssembly(String programName, String plattform) {
         this.filename = programName;
@@ -35,6 +36,7 @@ public class GenAssembly implements Visitor {
         if (plattform.equals("linux")) {
             compileForMac = false;
         }
+        this.output = new StringBuilder();
     }
 
     int next() {
@@ -42,12 +44,17 @@ public class GenAssembly implements Visitor {
     }
 
     void write(Object o) {
+        output.append(o);
+    }
+
+    void writeFile(Object o) {
         try {
             out.write(o.toString());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     void nl() {
         write("\n\t");
@@ -270,8 +277,10 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(VariableDecl variableDecl) {
-        if (!(
-                variableDecl.expr instanceof IntLiteral || variableDecl.expr instanceof OpExpr || variableDecl.expr instanceof VarAssignment
+        if (!(variableDecl.expr instanceof IntLiteral
+                || variableDecl.expr instanceof OpExpr
+                || variableDecl.expr instanceof VarAssignment
+                || variableDecl.expr instanceof StringLiteral
         )) throw new RuntimeException("kann keine VarDecl schreiben");
 
         if (variableDecl.global) {
@@ -307,6 +316,8 @@ public class GenAssembly implements Visitor {
                 default ->
                         throw new UnsupportedOperationException("Keine weiteren Typen bisher unterstützt.");
             }
+        } else if (expr instanceof StringLiteral stringLiteral) {
+
         } else if (expr instanceof VarAssignment varAssignment) {
             throw new UnsupportedOperationException(varAssignment.varName + "Varassignment bisher noch nicht unterstützt");
         }
@@ -332,24 +343,25 @@ public class GenAssembly implements Visitor {
 
         }
 
+
         try {
             // Generate .h file
             out = new FileWriter(filename + ".h");
             prog.functionDefinitions.stream().filter(fd -> !fd.name.equals("main")).forEach(fd -> {
-                write(fd.theType.ctype() + " " + fd.name);
+                writeFile(fd.theType.ctype() + " " + fd.name);
                 writeParameters(fd.parameters);
-                write(";\n");
+                writeFile(";\n");
             });
             out.close();
 
             File cFile = new File(filename + ".c");
             if (!cFile.isFile()) {
                 out = new FileWriter(cFile);
-                write("#include <stdlib.h>\n");
-                write("#include <stdio.h>\n");
-                write("#include <string.h>\n");
-                write("#include <strings.h>\n");
-                write("#include \"" + programName + ".h");
+                writeFile("#include <stdlib.h>\n");
+                writeFile("#include <stdio.h>\n");
+                writeFile("#include <string.h>\n");
+                writeFile("#include <strings.h>\n");
+                writeFile("#include \"" + programName + ".h");
                 out.close();
             }
 
@@ -385,17 +397,22 @@ public class GenAssembly implements Visitor {
         // Dann erst den Körper aufrufen, sonst funktioniert ein Aufruf in vorheriger Funktion nicht
         prog.functionDefinitions.forEach(fd -> fd.welcome(this));
 
+        prog.statements.forEach(s -> s.welcome(this));
+
         if (compileForMac) {
             write(".section __TEXT,__cstring\n");
         } else {
             write(".section .rodata\n");
         }
-        write("L_.str:");
-        nl();
-        write(".asciz\t\"%ld\\n\"");
+        stringsToWrite.forEach((id, value) -> {
+            write(id + ":");
+            nl();
+            write(".asciz\t\"" + value + "\"\n");
+        });
 
         write("\n"); // Last line
         try {
+            out.write(output.toString());
             out.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -403,20 +420,20 @@ public class GenAssembly implements Visitor {
     }
 
     private void writeParameters(List<Parameter> ps) {
-        write("(");
+        writeFile("(");
         var first = true;
         for (Parameter p : ps) {
             if (first) {
                 first = false;
             } else {
-                write(", ");
+                writeFile(", ");
             }
-            write(p.theType.ctype());
-            write(" ");
-            write(p.name);
+            writeFile(p.theType.ctype());
+            writeFile(" ");
+            writeFile(p.name);
 
         }
-        write(")");
+        writeFile(")");
     }
 
     @Override
@@ -428,14 +445,33 @@ public class GenAssembly implements Visitor {
     public void visit(FunctionCall functionCall) {
         if (Arrays.stream(libraryFunctions).anyMatch(s -> s.equals(functionCall.functionName))) {
             callLibraryFunction(functionCall);
-            return;
+        } else {
+            var functionDefinition = functions.get(functionCall.functionName);
+            if (functionDefinition == null) {
+                reportError(functionCall.line, functionCall.column, functionCall.functionName + "() has no function defined.");
+            }
         }
-        var functionDefinition = functions.get(functionCall.functionName);
-        if (functionDefinition == null) {
-            reportError(functionCall.line, functionCall.column, functionCall.functionName + "() has no function defined.");
+        int numArgs = functionCall.args.size();
+        int numRegArgs = Math.min(numArgs, registers.length);
+
+        List<String> tempStorage = new ArrayList<>();
+
+        // Evaluate and store arguments that will go in registers (right to left)
+        for (int i = numRegArgs - 1; i >= 0; i--) {
+            functionCall.args.get(i).welcome(this);
+            nl();
+            write("movq\t%rax, " + registers[i]); // Move result to argument register
         }
 
-        for (int i = 0; i < Math.min(functionCall.args.size(), registers.length); i++) {
+        // Evaluate and push arguments that go on the stack (right to left)
+        for (int i = numArgs - 1; i >= registers.length; i--) {
+            functionCall.args.get(i).welcome(this);
+            nl();
+            write("pushq\t%rax"); // Push argument onto stack
+            tempStorage.add("%rax"); // Track pushed arguments
+        }
+
+        /*for (int i = 0; i < Math.min(functionCall.args.size(), registers.length); i++) {
             functionCall.args.get(i).welcome(this);
             nl();
             write("movq\t%rax, " + registers[i]);
@@ -445,25 +481,33 @@ public class GenAssembly implements Visitor {
             functionCall.args.get(i).welcome(this);
             nl();
             write("pushq\t%rax");
-        }
+        }*/
+
+
         if (functionCall.attribute.isTailCall) {
             nl();
             write("jmp .LStart" + tailCallOptimizationID);
         }
         nl();
         write("call\t" + (compileForMac ? "_" : "") + functionCall.functionName);
+
+        // Stack cleanup if arguments were pushed
+        if (!tempStorage.isEmpty()) {
+            nl();
+            write("addq\t$" + (tempStorage.size() * 8) + ", %rsp"); // Clean up stack
+        }
     }
 
-    private void callLibraryFunction(FunctionCall call) {
-        switch (call.functionName) {
+    private void callLibraryFunction(FunctionCall functionCall) {
+        switch (functionCall.functionName) {
             case "drucke" -> {
-                call.args.getFirst().welcome(this);
-                nl();
-                write("movq\t%rax, %rsi");
-                nl();
-                write("leaq\tL_.str(%rip), %rdi");
-                nl();
-                write("callq\t" + (compileForMac ? "_" : "") + "printf");
+                functionCall.functionName = "printf";
+                var firstArg = functionCall.args.getFirst();
+                if (firstArg instanceof StringLiteral stringLiteral) {
+                    stringLiteral.s = stringLiteral.s.replace("%d", "%ld");
+                } else {
+                    throw new UnsupportedOperationException("Nur inline Strings können gedruckt werden");
+                }
             }
             case "eingabe" -> System.out.println("Eingabe"); //TODO
             default ->
@@ -490,7 +534,7 @@ public class GenAssembly implements Visitor {
         write("jmp " + condition);
         write("\n" + loopEnd + ": ");
         nl();
-        write("nop");
+        write("nop\n");
 
 
         loopConditionStack.pop();
@@ -568,5 +612,13 @@ public class GenAssembly implements Visitor {
             nl();
             write("movq\t%rax, _" + labelName + "(%rip)");
         }
+    }
+
+    @Override
+    public void visit(StringLiteral stringLiteral) {
+        var stringID = "L_str." + next();
+        stringsToWrite.put(stringID, stringLiteral.s);
+        nl();
+        write("leaq\t" + stringID + "(%rip), %rax");
     }
 }

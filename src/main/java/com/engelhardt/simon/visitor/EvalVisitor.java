@@ -20,6 +20,9 @@ public class EvalVisitor implements Visitor {
             case add -> result = l + r;
             case sub -> result = l - r;
             case mult -> result = l * r;
+            case div -> result = l / r;
+            case mod -> result = l % r;
+            default -> throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }
@@ -71,21 +74,21 @@ public class EvalVisitor implements Visitor {
 
     @Override
     public void visit(ContinueStatement continueStatement) {
-
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void visit(BreakStatement breakStatement) {
-
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void visit(VarAssignment varAssignment) {
-
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void reportError(int line, int column, String message) {
-        Visitor.super.reportError(line, column, message);
+    public void visit(StringLiteral stringLiteral) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -86,4 +86,9 @@ public class MarkTailCall implements Visitor {
     public void visit(VarAssignment varAssignment) {
 
     }
+
+    @Override
+    public void visit(StringLiteral stringLiteral) {
+
+    }
 }

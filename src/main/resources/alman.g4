@@ -64,6 +64,7 @@ expr returns [AST result]:
     | expr (IS_EQUAL | NOT_EQUAL | LESS_THAN | GREATER_THAN | GREATER_THAN_EQUAL | LESS_THAN_EQUAL) expr
     | functionCall
     | zahl
+    | string
     | ID
     | LPAR expr RPAR
     ;
@@ -75,8 +76,11 @@ functionCall returns [AST result]:
 exprList: expr (COMMA expr)*; // arg list
 
 zahl returns [ IntLiteral result]: NUMBER;
+string returns [ StringLiteral result]: STRING;
 
 NUMBER : [0-9]+;
+STRING: '"' (~["\\] | '\\' .)* '"'
+      | '\'' (~['\\] | '\\' .)* '\'';
 PLUS : '+';
 MINUS : '-';
 NOT: '!';
