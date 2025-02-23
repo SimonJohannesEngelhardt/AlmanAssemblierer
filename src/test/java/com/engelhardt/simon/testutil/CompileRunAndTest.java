@@ -32,7 +32,9 @@ public class CompileRunAndTest {
             // Compile the assembly code with helper.c
             Process gccProcess = new ProcessBuilder("arch", "-x86_64", "gcc", outputDirectoryAndName + ".s", "-o", outputDirectoryAndName).start();
             if (gccProcess.waitFor() != 0) {
-                gccProcess.errorReader().lines().forEach(System.out::println);
+                try (BufferedReader reader = gccProcess.errorReader()) {
+                    reader.lines().forEach(System.out::println);
+                }
                 throw new RuntimeException("Couldn't compile");
             }
 
