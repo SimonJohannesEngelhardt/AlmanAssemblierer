@@ -3,7 +3,7 @@ package com.engelhardt.simon.ast;
 public enum Operator {
     add("+"), mult("*"), sub("-"), div("/"),
     mod("%"), eq("=="), neq("!="), gt(">"), gteq(">="),
-    lt("<"), lteq("<="), and("&"), or("|"), xor("^");
+    lt("<"), lteq("<="), and("&"), or("|"), xor("^"), land("und"), lor("oder");
     public final String image;
 
     Operator(String image) {
@@ -12,14 +12,14 @@ public enum Operator {
 
     public boolean isArithmetic() {
         return switch (this) {
-            case add, mult, sub, div, mod -> true;
+            case add, mult, sub, div, mod, or, and, xor -> true;
             default -> false;
         };
     }
 
     public boolean isLogical() {
         return switch (this) {
-            case or, and -> true;
+            case land, lor -> true;
             default -> false;
         };
     }

@@ -69,8 +69,25 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(OpExpr opExpr) {
+        String endJmp = ".L" + next();
         // Code für linke Seite generieren
         opExpr.left.welcome(this);
+        if (opExpr.operator.isLogical()) {
+            switch (opExpr.operator) {
+                case land -> {
+                    nl();
+                    write("testq\t%rax, %rax");
+                    nl();
+                    write("jz\t " + endJmp); // falls hier 0 ist muss die rechte Seite nicht evaluiert werden, da das Ergebnis eh 0 ist
+                }
+                case lor -> {
+                    nl();
+                    write("testq\t%rax, %rax");
+                    nl();
+                    write("jnz\t " + endJmp); // falls hier 1 ist muss die rechte Seite nicht evaluiert werden, da das Ergebnis eh 1 ist
+                }
+            }
+        }
         // Ergebnis auf dem Stack speichern
         nl();
         write("pushq\t%rax");
@@ -96,13 +113,26 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("imulq\t%rbx, %rax");
             }
-            case div -> {
+            case div -> {//rbx / rax
+                nl();
+                write("movq\t%rbx, %rcx");
+                nl();
+                write("movq\t%rax, %rbx");
+                nl();
+                write("movq\t%rcx, %rax");
                 nl();
                 write("cqo");
                 nl();
                 write("idivq\t%rbx");
+
             }
             case mod -> {
+                nl();
+                write("movq\t%rbx, %rcx");
+                nl();
+                write("movq\t%rax, %rbx");
+                nl();
+                write("movq\t%rcx, %rax");
                 nl();
                 write("cqo");
                 nl();
@@ -170,8 +200,18 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("xorq\t%rbx, %rax");
             }
-            default -> throw new UnsupportedOperationException("Operator not supported (yet)");
+            case land, lor -> {
+                // es ist nur noch wichtig, ob die rechte Seite wahr ist. Die Linke Seite wurde schon geprüft
+                nl();
+                write("testq\t%rax, %rax"); // check if rax is zero
+                nl();
+                write("setne\t%al");
+                nl();
+                write("movzbq\t%al, %rax");
+            }
+            default -> throw new UnsupportedOperationException("Operator not supported");
         }
+        if (opExpr.operator.isLogical()) write("\n" + endJmp + ":");
     }
 
     @Override
@@ -470,18 +510,6 @@ public class GenAssembly implements Visitor {
             write("pushq\t%rax"); // Push argument onto stack
             tempStorage.add("%rax"); // Track pushed arguments
         }
-
-        /*for (int i = 0; i < Math.min(functionCall.args.size(), registers.length); i++) {
-            functionCall.args.get(i).welcome(this);
-            nl();
-            write("movq\t%rax, " + registers[i]);
-        }
-
-        for (int i = functionCall.args.size() - 1; i >= registers.length; i--) {
-            functionCall.args.get(i).welcome(this);
-            nl();
-            write("pushq\t%rax");
-        }*/
 
 
         if (functionCall.attribute.isTailCall) {

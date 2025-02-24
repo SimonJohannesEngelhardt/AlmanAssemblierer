@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CompileRunAndTest {
     public static void testDirectory(String folder) throws IOException, InterruptedException {
+        System.out.println("Testing " + folder);
         File almnDir = new File("src/test/resources/" + folder);
         File[] almnFiles = almnDir.listFiles(((_, name) -> name.endsWith(".almn")));
         if (almnFiles == null) {
@@ -29,7 +30,7 @@ public class CompileRunAndTest {
             // Compile the .almn file
             Main.main(new String[]{almnFile.getPath()});
 
-            // Compile the assembly code with helper.c
+            // Compile the assembly code
             Process gccProcess = new ProcessBuilder("arch", "-x86_64", "gcc", outputDirectoryAndName + ".s", "-o", outputDirectoryAndName).start();
             if (gccProcess.waitFor() != 0) {
                 try (BufferedReader reader = gccProcess.errorReader()) {

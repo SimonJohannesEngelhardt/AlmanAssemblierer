@@ -7,7 +7,11 @@ import java.io.IOException;
 
 public class TestDirectorys {
     @Test
-    public void testGod() throws IOException, InterruptedException {
+    public void testDirectorys() throws IOException, InterruptedException {
         CompileRunAndTest.testDirectory("maintest");
+        CompileRunAndTest.testDirectory("operators");
+        CompileRunAndTest.testDirectory("boolean");
+        CompileRunAndTest.testDirectory("fizzbuzz");
+        CompileRunAndTest.testDirectory("print");
     }
 }

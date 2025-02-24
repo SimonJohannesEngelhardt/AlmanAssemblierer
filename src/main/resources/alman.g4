@@ -60,11 +60,13 @@ whileStatement returns [WhileStatement result]:
 expr returns [AST result]:
     expr (MULT | DIV | MOD) expr
     | expr (PLUS | MINUS) expr
-    | expr (LESS_THAN | GREATER_THAN | GREATER_THAN_EQUAL | LESS_THAN_EQUAL)
+    | expr (LESS_THAN | GREATER_THAN | GREATER_THAN_EQUAL | LESS_THAN_EQUAL) expr
     | expr (IS_EQUAL | NOT_EQUAL) expr
     | expr AND expr
     | expr XOR expr
-    | expr OR expr // Bitwise inclusive or
+    | expr OR expr
+    | expr LAND expr
+    | expr LOR expr
     | functionCall
     | zahl
     | string

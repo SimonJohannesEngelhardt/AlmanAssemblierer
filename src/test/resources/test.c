@@ -1,9 +1,11 @@
 #include <stdio.h>
-long y = -20;
 void f(long i) {
     printf("%ld\n", i);
     printf("%ld\n", i);
 }
 int main() {
-   f(-20);
+    int y = 1;
+    if(1==y && 2==y) {
+        f(20);
+    }
 }

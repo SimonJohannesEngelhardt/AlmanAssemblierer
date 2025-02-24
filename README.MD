@@ -1,48 +1,48 @@
 # Alman Assembliere
 
-## Vorraussetzungen
+## Voraussetzungen
 
-Java muss installiert sein. Am besten eine neuere Version wie Java 23.
+Java muss installiert sein. Am besten eine neuere Version wie Java 23. Es wird Linux und MacOS unterstützt, auf Windows
+könnte es eventuell mit einer WSL funktionieren.
 
 ## Installation
 
 `./gradlew` - falls Gradle noch nicht installiert wird, so wird es installiert. Außerdem werden Abhängigkeiten
 heruntergeladen.
 
-## Notizen
+## Kompilieren
 
-Auf Linux: gcc test1.s -o a.out
-Auf MacOS:
-arch -x86_64 gcc test1.s -o a.out
-arch -x86_64 gcc -S -fno-asynchronous-unwind-tables C-testfiles/test.c -o C-testfiles/test.s
+Um ein Programm in der "Almn"-Sprache zu kompilieren muss zuerst eine Datei mit der Endung .almn erstellt werden. In
+diese kann nun der Code geschrieben werden. Anschließend kann das Programm mit folgendem Befehl kompiliert werden:
+`./gradlew run --args="path/to/file.almn"`
+Oder falls die jar direkt benutzt wird:
+`java -jar Alman-Assembliere-v-1.0-.jar path/to/file.almn`
 
-### Konventionen
+Außerdem können noch folgende weiter Parameter mit übergeben werden:
 
-Eine Expression wird immer so evaluiert, dass in %rax das Ergebnis steht.
-Dabei steht 0 für false und alles andere für true.
+- `--tree-view` - zeigt den AST in einem Baum an
+- `--pretty-printer` - Gibt den Code in einer schönen Form auf der Konsole aus
+- `--linux` - Kompiliert den Code für Linux (Standard ist MacOS)
 
-`movq    _x(%rip), %rax`
-Nehme die Adresse am Label _x + das %rip register
+Im selben Ordner wie die `.almn` Datei wird eine `.s` Datei, sowie ein `.c` und eine `.h` Datei erstellt. Die `.s` Datei
+ist die
+Assemblerdatei, die `.c` Datei ist die C Datei für direkten Zugriff auf die Methoden und die `.h` Datei ist die Header
+Datei
+die die Schnittstelle für C zur Verfügung stellt.
 
-`.p2align 3, 0x0`
-Quad Align
-Die 3 steht für 2^3 = 8, also ist immer eine 2er Potenz gemeint. For example ‘.p2align 3’ advances the location counter
-until it is a multiple of 8. If the location counter is already a multiple of 8, no change is needed. If the expression
-is omitted then a default value of 0 is used, effectively disabling alignment requirements.
-https://sourceware.org/binutils/docs/as/P2align.html#P2align
+Die `.s` Datei kann nun mit einem Assembler kompiliert werden. Dafür kann ein Befehl wie `gcc test1.s -o test1`
+verwendet werden.
+Achtung: Auf M* Chips(MacOS) muss der Befehl `arch -x86_64 gcc test1.s -o test1` verwendet werden.
 
-### Einstiegspunkt?
+## Ausführen
 
-- haupt
-- haupteinstiegspunkt
-- einstiegspunkt
+`./test1` - führt das Programm aus
 
-## ACHTUNG WICHTIG
+# Ressourcen
 
-Beim kompilieren auf Linux gibt es folgendes Problem:
+[Detailiertes Wiki](https://github.com/SimonJohannesEngelhardt/AlmanAssemblierer/wiki/)
 
-- in meinem Compiler werden alle Funktionen mit einem **_** vorangestellt geschrieben
-- das liegt daran das C bei der Kompilierung von z.B. f1() nicht etwas f1 aufruft, sondern _f1
-- das ist aber auf Linux nicht so
-- auf Linux wird das ganze einfach direkt ohne **_** übersetzt
-- und dann können die Funktionen natürlich nicht mehr gefunden werden
+## Beispieldateien
+
+Um sich einen ersten Überblick zu verschaffen, empfehlt sich der Ordner `src/test/resources/`. Hier sind mehrere Ordner
+die jeweils ein Beispielprogramm beinhalten, zusammen mit bereits kompilierten Dateien.

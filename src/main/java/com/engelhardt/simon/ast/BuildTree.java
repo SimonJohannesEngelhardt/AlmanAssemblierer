@@ -152,6 +152,22 @@ public class BuildTree extends almanBaseListener {
                     ctx.expr().get(1).result,
                     Operator.gteq
             );
+        } else if (ctx.LOR() != null) {
+            ctx.result = new OpExpr(
+                    line,
+                    column,
+                    ctx.expr().get(0).result,
+                    ctx.expr().get(1).result,
+                    Operator.lor
+            );
+        } else if (ctx.LAND() != null) {
+            ctx.result = new OpExpr(
+                    line,
+                    column,
+                    ctx.expr().get(0).result,
+                    ctx.expr().get(1).result,
+                    Operator.land
+            );
         } else if (ctx.LPAR() != null && ctx.RPAR() != null) {
             ctx.result = ctx.expr().getFirst().result;
             ctx.result.attribute.parenthesis = true;

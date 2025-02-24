@@ -9,7 +9,7 @@ application {
 }
 
 group = "com.engelhardt.simon"
-version = "v0.1"
+version = "v1.0"
 
 
 repositories {

@@ -1,22 +1,13 @@
-definiere ifElse(n: ganzzahl): nichts {
-  wenn (n == 1) {
-    drucke("1\n");
-  } ansonsten wenn (n == 2) {
-    drucke("2\n");
-  } ansonsten wenn (n == 3) {
-    drucke("3\n");
-  } ansonsten {
-    drucke("Ich kenne keine anderen Zahlen\n");
-  }
-}
 definiere haupt(): ganzzahl {
     lasse i: ganzzahl = 20;
-    //TODO: Fix the while loop
     waehrend(i > 0) {
       wenn (i % 2 == 0) {
-        breche;
-      } ansonsten wenn (i % 3 == 0) {
+        drucke("%g\n", i);
+        i = i - 1;
         fahre fort;
+      } ansonsten wenn (i % 3 == 0) {
+        drucke("%g\n", i);
+        breche;
       }
       drucke("%g\n", i);
       i = i - 1;
