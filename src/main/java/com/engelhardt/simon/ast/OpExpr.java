@@ -20,10 +20,4 @@ public class OpExpr extends AST {
         visitor.visit(this);
     }
 
-
-    private void reportError(String s) {
-        System.err.println(s);
-    }
-
-
 }

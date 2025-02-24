@@ -1,8 +1,13 @@
 definiere haupt(): ganzzahl {
-    lasse x: wahrheitswert = wahr;
-    wenn (x) {
-        drucke("x ist wahr\n");
+    konstante x: wahrheitswert = wahr;
+    konstante y: wahrheitswert = falsch;
+    konstante n: ganzzahl = 42;
+    konstante m: ganzzahl = 0;
+
+    wenn (x und y oder n > m) {
+        drucke("x && y || n > m ist wahr\n");
     } ansonsten {
-        drucke("x ist falsch\n");
+        drucke("x && y || n > m ist falsch\n");
     }
+
 }

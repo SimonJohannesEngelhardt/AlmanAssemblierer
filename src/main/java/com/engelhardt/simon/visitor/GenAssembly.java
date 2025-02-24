@@ -113,7 +113,8 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("imulq\t%rbx, %rax");
             }
-            case div -> {//rbx / rax
+            case div -> {
+                // Hier müssen zuerst %rxa und %rbx getauscht werden, da idivq immer mit %rax teil
                 nl();
                 write("movq\t%rbx, %rcx");
                 nl();
@@ -121,7 +122,7 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("movq\t%rcx, %rax");
                 nl();
-                write("cqo");
+                write("cqo"); // https://www.felixcloutier.com/x86/cwd:cdq:cqo
                 nl();
                 write("idivq\t%rbx");
 
@@ -134,7 +135,7 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("movq\t%rcx, %rax");
                 nl();
-                write("cqo");
+                write("cqo"); // https://www.felixcloutier.com/x86/cwd:cdq:cqo
                 nl();
                 write("idivq\t%rbx");
                 nl();
@@ -144,9 +145,9 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("cmpq\t%rax, %rbx");
                 nl();
-                write("sete\t%al");
+                write("sete\t%al"); // sete can only write to a single byte, so we take the first byte of rax
                 nl();
-                write("movzbq\t%al, %rax");
+                write("movzbq\t%al, %rax"); // Then we extend it to the whole register
             }
             case neq -> {
                 nl();
@@ -337,6 +338,9 @@ public class GenAssembly implements Visitor {
     }
 
     private void generateGlobalVarDecl(VariableDecl variableDecl) {
+        if (variableDecl.expr instanceof StringLiteral) {
+            reportError(variableDecl.line, variableDecl.column, "Strings können nicht global sein");
+        }
         write("\t.globl _" + variableDecl.varName);
         nl();
         write(".p2align\t3, 0x0"); // Für long müsste es 2 statt 3 sein
@@ -362,7 +366,7 @@ public class GenAssembly implements Visitor {
             write(".quad " + (booleanLiteral.b ? "1" : "0"));
             globalVars.put(variableDecl.varName, variableDecl);
         } else if (expr instanceof VarAssignment varAssignment) {
-            throw new UnsupportedOperationException(varAssignment.varName + "Varassignment bisher noch nicht unterstützt");
+            throw new UnsupportedOperationException(varAssignment.varName + ": Varassignment bisher noch nicht unterstützt");
         }
         write("\n\n");
     }

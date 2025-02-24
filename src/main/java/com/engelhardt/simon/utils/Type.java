@@ -29,16 +29,8 @@ public sealed interface Type permits Type.PrimitiveType, Type.ReferenceType {
 
     boolean isPrimitive();
 
-    default boolean isReference() {
-        return !isPrimitive();
-    }
 
-    static boolean isBuildIn(String name) {
-        return switch (name) {
-            case "zeichenkette", "ganzzahl", "wahrheitswert" -> true;
-            default -> false;
-        };
-    }
+
 
     record PrimitiveType(String name, String ctype) implements Type {
         @Override

@@ -11,7 +11,6 @@ public class TypeCheckVisitor implements Visitor {
     Map<String, Type> globalVars;
     Map<String, FunctionDefinition> functions;
     FunctionDefinition currentFunction = null;
-    String[] libraryFunctions = {"drucke"};
 
     @Override
     public void visit(Prog prog) {
@@ -164,16 +163,45 @@ public class TypeCheckVisitor implements Visitor {
 
     @Override
     public void visit(WhileStatement whileStatement) {
+        whileStatement.condition.welcome(this);
+        if (!(whileStatement.condition.theType.equals(Type.BOOLEAN_TYPE) || whileStatement.condition.theType.equals(Type.LONG_TYPE))) {
+            reportError(whileStatement.line, whileStatement.column, "Falscher Typ " + whileStatement.condition.theType.name() + " != " + Type.BOOLEAN_TYPE);
+        }
+        whileStatement.block.welcome(this);
     }
 
     @Override
     public void visit(IfElseStatement ifElseStatement) {
+        ifElseStatement.ifCondition.welcome(this);
+        if (!(ifElseStatement.ifCondition.theType.equals(Type.BOOLEAN_TYPE) || ifElseStatement.ifCondition.theType.equals(Type.LONG_TYPE))) {
+            reportError(ifElseStatement.line, ifElseStatement.column, "Falscher Typ " + ifElseStatement.ifCondition.theType.name() + " != " + Type.BOOLEAN_TYPE);
+        }
+        ifElseStatement.ifBlock.welcome(this);
+
+        if (ifElseStatement.elseifConditions != null) {
+            ifElseStatement.elseifConditions.forEach(elseif -> {
+                elseif.welcome(this);
+                if (!(elseif.theType.equals(Type.BOOLEAN_TYPE) || elseif.theType.equals(Type.LONG_TYPE))) {
+                    reportError(elseif.line, elseif.column, "Falscher Typ " + elseif.theType.name() + " != " + Type.BOOLEAN_TYPE);
+                }
+                elseif.welcome(this);
+            });
+        }
+        
+        if (ifElseStatement.elseifBlocks != null) {
+            ifElseStatement.elseifBlocks.forEach(block -> block.welcome(this));
+        }
+
+        if (ifElseStatement.elseBlock != null) {
+            ifElseStatement.elseBlock.welcome(this);
+
+        }
+
 
     }
 
     @Override
     public void visit(ContinueStatement continueStatement) {
-
     }
 
     @Override

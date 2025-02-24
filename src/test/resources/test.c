@@ -1,4 +1,5 @@
 #include <stdio.h>
+char * s = "Hallo";
 void f(long i) {
     printf("%ld\n", i);
     printf("%ld\n", i);

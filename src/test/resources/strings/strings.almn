@@ -1,0 +1,9 @@
+definiere haupt(): ganzzahl {
+    konstante s: zeichenkette = "Hallo Welt!";
+    drucke("%z\n", s);
+    lasse z: zeichenkette = "Test me!";
+    drucke("%z\n", z);
+    z = "Test me again!";
+    drucke("%z\n", z);
+    drucke("%z %z %g %g %w %w\n", "Hallo", "Welt", 42, 42, wahr, falsch);
+}
