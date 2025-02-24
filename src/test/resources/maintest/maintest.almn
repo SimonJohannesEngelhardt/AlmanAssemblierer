@@ -1,0 +1,107 @@
+konstante i123: ganzzahl = 100;
+
+
+definiere f42() : ganzzahl{
+    gib zurueck 42;
+}
+
+definiere f6(x1:ganzzahl,x2:ganzzahl,x3:ganzzahl,x4:ganzzahl,x5:ganzzahl,x6:ganzzahl,x7:ganzzahl): ganzzahl {
+    gib zurueck x6;
+}
+
+definiere f7(x1:ganzzahl,x2:ganzzahl,x3:ganzzahl,x4:ganzzahl,x5:ganzzahl,x6:ganzzahl,x7:ganzzahl): ganzzahl {
+    gib zurueck x1;
+}
+
+definiere g1(x1:ganzzahl,x2:ganzzahl,x3:ganzzahl,x4:ganzzahl,x5:ganzzahl,x6:ganzzahl,x7:ganzzahl,x8:ganzzahl,x9:ganzzahl): ganzzahl {
+    gib zurueck x1;
+}
+definiere g9(x1:ganzzahl,x2:ganzzahl,x3:ganzzahl,x4:ganzzahl,x5:ganzzahl,x6:ganzzahl,x7:ganzzahl,x8:ganzzahl,x9:ganzzahl): ganzzahl {
+    gib zurueck x9;
+}
+
+definiere f1(x: ganzzahl, y:ganzzahl, z:ganzzahl): ganzzahl {
+    gib zurueck x+y*z;
+}
+
+definiere whileLoop(x: ganzzahl) :ganzzahl {
+    lasse i: ganzzahl = 0;
+    waehrend (i < x) {
+        i = i + 1;
+    }
+    gib zurueck i;
+}
+
+definiere fakultaet(n: ganzzahl): ganzzahl {
+    lasse res: ganzzahl = 1;
+    waehrend(n > 1) {
+        res = res * n;
+        n = n - 1;
+    }
+    gib zurueck res;
+}
+
+definiere fakultaetRecursive(n: ganzzahl) : ganzzahl {
+    wenn (n <= 1) {
+        gib zurueck 1;
+    } ansonsten {
+        gib zurueck n * fakultaetRecursive(n - 1);
+    }
+}
+
+definiere fakultaetIt(n : ganzzahl) : ganzzahl {
+    gib zurueck fakultaetAux(1,n);
+}
+
+definiere fakultaetAux(r: ganzzahl, n: ganzzahl) : ganzzahl {
+    wenn (n == 1) {
+        gib zurueck r;
+    } ansonsten {
+        gib zurueck fakultaetAux(r*n, n - 1);
+    }
+}
+definiere fakultaetAux1(r: ganzzahl, n: ganzzahl) : ganzzahl {
+    wenn (n == 1) {
+        gib zurueck r;
+    } ansonsten {
+        gib zurueck fakultaetAux1(r*n, n - 1);
+    }
+}
+
+definiere fib(n: ganzzahl): ganzzahl {
+    wenn (n <= 1) {
+        gib zurueck n;
+    } ansonsten {
+        gib zurueck fib(n - 2) + fib(n - 1);
+    }
+}
+
+definiere haupt(): ganzzahl {
+    drucke("%g\n", f42());
+    drucke("%g\n", f6(1,2,3,4,5,6,f42()));
+    drucke("%g\n", f7(1,2,3,4,5,6,7));
+    drucke("%g\n", g1(1,2,3,4,5,6,7,8,9));
+    drucke("%g\n", g9(1,2,3,4,5,6,7,8,9));
+    drucke("%g\n", f1(3,3,3));
+    drucke("%g\n", f1(200,4,3));
+    drucke("%g\n", whileLoop(200));
+    drucke("%g\n", fakultaet(6));
+    drucke("%g\n", fakultaet(2));
+    drucke("%g\n", fakultaet(1));
+    drucke("%g\n", fakultaet(0));
+    drucke("%g\n", fakultaetRecursive(6));
+    drucke("%g\n", fakultaetRecursive(0));
+    drucke("%g\n", fakultaetIt(6));
+    drucke("%g\n", fakultaetAux(1, 6));
+    drucke("%g\n", fakultaetAux(1, 7));
+    drucke("%g\n", fakultaetAux1(1,7));
+    drucke("%g\n", fib(0));
+    drucke("%g\n", fib(3));
+    drucke("%g\n", fib(4));
+    drucke("%g\n", fib(5));
+    drucke("%g\n", fib(6));
+    drucke("%g\n", fakultaet(f42()));
+    gib zurueck 0;
+}
+
+

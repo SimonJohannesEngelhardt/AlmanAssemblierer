@@ -1,0 +1,17 @@
+definiere main(): ganzzahl {
+    rightAngledTriangle(20);
+}
+
+definiere rightAngledTriangle(n: ganzzahl): nichts {
+    lasse i: ganzzahl = 0;
+    lasse j: ganzzahl = 0;
+    waehrend(i < n) {
+        j = 0;
+        waehrend(j <= i) {
+            drucke("*");
+            j = j + 1;
+        }
+        drucke("\n");
+        i = i + 1;
+    }
+}

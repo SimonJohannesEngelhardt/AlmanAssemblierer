@@ -1,0 +1,19 @@
+definiere haupt(): ganzzahl {
+    lasse i: ganzzahl = 1;
+    waehrend(i < 100) {
+        fizzbuzz(i);
+        i = i + 1;
+    }
+}
+
+definiere fizzbuzz(n: ganzzahl): nichts {
+    wenn (n % 3 == 0 und n % 5 == 0) {
+        drucke("FizzBuzz\n");
+    } ansonsten wenn (n % 3 == 0) {
+        drucke("Fizz\n");
+    } ansonsten wenn (n % 5 == 0) {
+        drucke("Buzz\n");
+    } ansonsten {
+        drucke("%g\n", n);
+    }
+}

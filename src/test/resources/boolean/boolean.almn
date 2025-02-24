@@ -1,0 +1,8 @@
+definiere haupt(): ganzzahl {
+    lasse x: wahrheitswert = wahr;
+    wenn (x) {
+        drucke("x ist wahr\n");
+    } ansonsten {
+        drucke("x ist falsch\n");
+    }
+}

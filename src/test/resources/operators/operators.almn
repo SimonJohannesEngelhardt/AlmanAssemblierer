@@ -1,0 +1,44 @@
+// Write a file that utilizes the operators in the ALMN language
+definiere main(): ganzzahl {
+    konstante x1: ganzzahl = 1;
+    drucke("%g\n", x1);
+    konstante x42: ganzzahl = 41 + x1; // = 42
+    drucke("%g\n", x42);
+    lasse x2: ganzzahl = 2;
+    x2 = 5 + 10; // = 15
+    drucke("%g\n", x2);
+    x2 = 100 - 31; // = 69
+    drucke("%g\n", x2);
+    x2 = 42 * 10; // = 420
+    drucke("%g\n", x2);
+    x2 = 121 / 11; // = 11
+    drucke("%g\n", x2);
+    x2 = 50 % 2; // = 0
+    drucke("%g\n", x2);
+    x2 = 50 % 3; // = 2
+    drucke("%g\n", x2);
+    x2 = 2 ^ 4; // = 6 (XOR)
+    drucke("%g\n", x2);
+    x2 = 2 & 2; // = 2 (AND)
+    drucke("%g\n", x2);
+    x2 = 2 & 1; // = 0 (AND)
+    drucke("%g\n", x2);
+    x2 = 2 | 4; // = 6 (OR)
+    drucke("%g\n", x2);
+    x2 = 2 | 4 | 1; // = 7 (OR)
+    drucke("%g\n", x2);
+    x2 = (15*4) * (-1 + 1);
+    drucke("%g\n", x2);
+    x2 = (15 * 4 / 3) * (1 | 2 + (1 & 1));
+    drucke("%g\n", x2);
+    lasse x3: ganzzahl = 200;
+    lasse x4: ganzzahl = 200;
+    drucke("%w\n", x3 == x4);
+    drucke("%w\n", x3 != x4);
+    x4 = x4 + 1;
+    drucke("%w\n", x3 >= x4);
+    drucke("%w\n", x3 >= x3);
+    drucke("%w\n", x3 <= x4);
+    drucke("%w\n", x3 < x4);
+    drucke("%w\n", x3 > x4);
+}

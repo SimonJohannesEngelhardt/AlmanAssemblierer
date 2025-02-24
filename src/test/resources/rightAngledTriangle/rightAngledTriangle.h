@@ -1,0 +1,1 @@
+void rightAngledTriangle(long n);
