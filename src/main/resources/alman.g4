@@ -58,13 +58,17 @@ whileStatement returns [WhileStatement result]:
     ;
 
 expr returns [AST result]:
-    expr MOD expr
-    | expr (MULT | DIV) expr
+    expr (MULT | DIV | MOD) expr
     | expr (PLUS | MINUS) expr
-    | expr (IS_EQUAL | NOT_EQUAL | LESS_THAN | GREATER_THAN | GREATER_THAN_EQUAL | LESS_THAN_EQUAL) expr
+    | expr (LESS_THAN | GREATER_THAN | GREATER_THAN_EQUAL | LESS_THAN_EQUAL)
+    | expr (IS_EQUAL | NOT_EQUAL) expr
+    | expr AND expr
+    | expr XOR expr
+    | expr OR expr // Bitwise inclusive or
     | functionCall
     | zahl
     | string
+    | wahrheitswert
     | ID
     | LPAR expr RPAR
     ;
@@ -77,12 +81,14 @@ exprList: expr (COMMA expr)*; // arg list
 
 zahl returns [ IntLiteral result]: NUMBER;
 string returns [ StringLiteral result]: STRING;
+wahrheitswert returns [ BooleanLiteral result]: WAHRHEITSWERT;
 
 NUMBER : '-'?[0-9]+;
 
 // Liest Strings ein, die von Anführungszeichen umschlossen sind. Erlaubt es auch, Anführungszeichen durch Escapen innerhalb des Strings zu verwenden.
 STRING: '"' (~["\\] | '\\' .)* '"'
       | '\'' (~['\\] | '\\' .)* '\'';
+WAHRHEITSWERT: 'wahr' | 'falsch';
 PLUS : '+';
 MINUS : '-';
 NOT: '!';
@@ -94,6 +100,11 @@ LESS_THAN: '<';
 GREATER_THAN: '>';
 LESS_THAN_EQUAL: '<=';
 GREATER_THAN_EQUAL: '>=';
+AND: '&';
+LAND: 'und';
+OR: '|';
+LOR: 'oder';
+XOR: '^';
 MOD: '%';
 LPAR : '(';
 RPAR : ')';

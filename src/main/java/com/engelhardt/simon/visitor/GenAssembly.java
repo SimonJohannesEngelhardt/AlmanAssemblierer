@@ -27,8 +27,8 @@ public class GenAssembly implements Visitor {
     int next = 0;
     Map<String, String> stringsToWrite = new HashMap<>();
     boolean compileForMac = true;
-    private int tailCallOptimizationID;
     StringBuilder output;
+    private int tailCallOptimizationID;
 
     public GenAssembly(String programName, String plattform) {
         this.filename = programName;
@@ -166,6 +166,10 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("andq\t%rbx, %rax");
             }
+            case xor -> {
+                nl();
+                write("xorq\t%rbx, %rax");
+            }
             default -> throw new UnsupportedOperationException("Operator not supported (yet)");
         }
     }
@@ -280,6 +284,7 @@ public class GenAssembly implements Visitor {
                 || variableDecl.expr instanceof OpExpr
                 || variableDecl.expr instanceof VarAssignment
                 || variableDecl.expr instanceof StringLiteral
+                || variableDecl.expr instanceof BooleanLiteral
         )) throw new RuntimeException("kann keine VarDecl schreiben");
 
         if (variableDecl.global) {
@@ -310,8 +315,10 @@ public class GenAssembly implements Visitor {
             } else {
                 throw new UnsupportedOperationException("Keine weiteren Typen bisher unterstützt.");
             }
-        } else if (expr instanceof StringLiteral stringLiteral) {
-            //TODO
+        } else if (expr instanceof BooleanLiteral booleanLiteral) {
+            nl();
+            write(".quad " + (booleanLiteral.b ? "1" : "0"));
+            globalVars.put(variableDecl.varName, variableDecl);
         } else if (expr instanceof VarAssignment varAssignment) {
             throw new UnsupportedOperationException(varAssignment.varName + "Varassignment bisher noch nicht unterstützt");
         }
@@ -336,7 +343,6 @@ public class GenAssembly implements Visitor {
             }
 
         }
-
 
         try {
             // Generate .h file
@@ -497,7 +503,7 @@ public class GenAssembly implements Visitor {
             functionCall.functionName = "printf";
             var firstArg = functionCall.args.getFirst();
             if (firstArg instanceof StringLiteral stringLiteral) {
-                stringLiteral.s = stringLiteral.s.replace("%g", "%ld").replace("%z", "%s");
+                stringLiteral.s = stringLiteral.s.replace("%g", "%ld").replace("%z", "%s").replace("%w", "%ld");
             } else {
                 throw new UnsupportedOperationException("Nur inline Strings können gedruckt werden");
             }
@@ -591,7 +597,6 @@ public class GenAssembly implements Visitor {
     }
 
 
-
     @Override
     public void visit(VarAssignment varAssignment) {
         varAssignment.expr.welcome(this);
@@ -615,5 +620,11 @@ public class GenAssembly implements Visitor {
         stringsToWrite.put(stringID, stringLiteral.s);
         nl();
         write("leaq\t" + stringID + "(%rip), %rax");
+    }
+
+    @Override
+    public void visit(BooleanLiteral booleanLiteral) {
+        nl();
+        write("movq\t$" + (booleanLiteral.b ? 1 : 0) + ", %rax");
     }
 }

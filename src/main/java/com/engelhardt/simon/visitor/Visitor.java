@@ -33,6 +33,8 @@ public interface Visitor {
 
     void visit(StringLiteral stringLiteral);
 
+    void visit(BooleanLiteral booleanLiteral);
+
     default void reportError(int line, int column, String message) {
         System.err.println("Error at (" + line + "," + column + "): " + message);
     }

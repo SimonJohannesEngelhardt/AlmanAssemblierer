@@ -19,6 +19,11 @@ public class BuildTree extends almanBaseListener {
     }
 
     @Override
+    public void exitWahrheitswert(almanParser.WahrheitswertContext ctx) {
+        ctx.result = new BooleanLiteral(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(), ctx.WAHRHEITSWERT().getText().equals("wahr"));
+    }
+
+    @Override
     public void exitExpr(almanParser.ExprContext ctx) {
         int line = ctx.getStart().getLine();
         int column = ctx.getStart().getCharPositionInLine();
@@ -27,6 +32,32 @@ public class BuildTree extends almanBaseListener {
             ctx.result = ctx.zahl().result;
         } else if (ctx.string() != null) {
             ctx.result = ctx.string().result;
+        } else if (ctx.wahrheitswert() != null) {
+            ctx.result = ctx.wahrheitswert().result;
+        } else if (ctx.AND() != null) {
+            ctx.result = new OpExpr(
+                    line,
+                    column,
+                    ctx.expr().get(0).result,
+                    ctx.expr().get(1).result,
+                    Operator.and
+            );
+        } else if (ctx.OR() != null) {
+            ctx.result = new OpExpr(
+                    line,
+                    column,
+                    ctx.expr().get(0).result,
+                    ctx.expr().get(1).result,
+                    Operator.or
+            );
+        } else if (ctx.XOR() != null) {
+            ctx.result = new OpExpr(
+                    line,
+                    column,
+                    ctx.expr().get(0).result,
+                    ctx.expr().get(1).result,
+                    Operator.xor
+            );
         } else if (ctx.PLUS() != null) {
             ctx.result = new OpExpr(
                     line,

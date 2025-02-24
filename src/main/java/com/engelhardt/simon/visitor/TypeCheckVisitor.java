@@ -55,6 +55,11 @@ public class TypeCheckVisitor implements Visitor {
     }
 
     @Override
+    public void visit(BooleanLiteral booleanLiteral) {
+        booleanLiteral.theType = Type.BOOLEAN_TYPE;
+    }
+
+    @Override
     public void visit(OpExpr opExpr) {
         opExpr.left.welcome(this);
         if (opExpr.left.theType.equals(Type.STRING_TYPE)) {

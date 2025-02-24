@@ -90,4 +90,9 @@ public class EvalVisitor implements Visitor {
     public void visit(StringLiteral stringLiteral) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public void visit(BooleanLiteral booleanLiteral) {
+        result = booleanLiteral.b ? 1 : 0;
+    }
 }

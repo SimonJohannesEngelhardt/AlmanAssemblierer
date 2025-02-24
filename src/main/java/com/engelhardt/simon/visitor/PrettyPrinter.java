@@ -187,6 +187,11 @@ public class PrettyPrinter implements Visitor {
     }
 
     @Override
+    public void visit(BooleanLiteral booleanLiteral) {
+        write(booleanLiteral.b ? "wahr" : "falsch");
+    }
+
+    @Override
     public void reportError(int line, int column, String message) {
         Visitor.super.reportError(line, column, message);
     }

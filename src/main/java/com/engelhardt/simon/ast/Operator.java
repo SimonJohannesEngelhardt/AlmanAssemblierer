@@ -3,7 +3,7 @@ package com.engelhardt.simon.ast;
 public enum Operator {
     add("+"), mult("*"), sub("-"), div("/"),
     mod("%"), eq("=="), neq("!="), gt(">"), gteq(">="),
-    lt("<"), lteq("<="), and("&&"), or("||");
+    lt("<"), lteq("<="), and("&"), or("|"), xor("^");
     public final String image;
 
     Operator(String image) {
