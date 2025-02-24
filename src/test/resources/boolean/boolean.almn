@@ -4,10 +4,10 @@ definiere haupt(): ganzzahl {
     konstante n: ganzzahl = 42;
     konstante m: ganzzahl = 0;
 
-    wenn (x und y oder n > m) {
-        drucke("x && y || n > m ist wahr\n");
+    wenn (x und y oder n > m und falsch oder wahr) {
+        drucke("x && y || n > m && false || true ist wahr\n");
     } ansonsten {
-        drucke("x && y || n > m ist falsch\n");
+        drucke("x && y || n > m && false || true ist falsch\n");
     }
 
 }

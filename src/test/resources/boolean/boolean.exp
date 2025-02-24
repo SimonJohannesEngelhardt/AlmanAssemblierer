@@ -1,1 +1,1 @@
-x ist wahr
+x && y || n > m && false || true ist wahr
