@@ -9,5 +9,4 @@ definiere haupt(): ganzzahl {
     } ansonsten {
         drucke("x && y || n > m && false || true ist falsch\n");
     }
-
 }
