@@ -172,7 +172,6 @@ public class GenAssembly implements Visitor {
 
     @Override
     public void visit(Variable variable) {
-        // TODO mit containsKey vorher checken ob die Variable existiert
         // Wert einer Variablen in %rax speichern
         var local = env.get(variable.name);
         var global = globalVars.get(variable.name);
@@ -297,7 +296,6 @@ public class GenAssembly implements Visitor {
         write("\n");
         write("_" + variableDecl.varName + ": ");
         var expr = variableDecl.expr;
-        // TODO hier kann wahrscheinlich beides zusammengefasst werden, wenn man jedes mal den EvalVisitor drüberlaufen lässt.
         if (expr instanceof OpExpr opExpr) {
             EvalVisitor eval = new EvalVisitor();
             opExpr.welcome(eval);
@@ -305,19 +303,15 @@ public class GenAssembly implements Visitor {
             write(".quad " + eval.result);
             globalVars.put(variableDecl.varName, variableDecl);
         } else if (expr instanceof IntLiteral intLiteral) {
-            switch (variableDecl.theType.name()) {
-                case Type.long_type -> {
-                    nl();
-                    write(".quad " + intLiteral.n);
-                    globalVars.put(variableDecl.varName, variableDecl);
-                }
-                case Type.double_type ->
-                        throw new UnsupportedOperationException("Type Double not supported");
-                default ->
-                        throw new UnsupportedOperationException("Keine weiteren Typen bisher unterstützt.");
+            if (variableDecl.theType.name().equals(Type.long_type)) {
+                nl();
+                write(".quad " + intLiteral.n);
+                globalVars.put(variableDecl.varName, variableDecl);
+            } else {
+                throw new UnsupportedOperationException("Keine weiteren Typen bisher unterstützt.");
             }
         } else if (expr instanceof StringLiteral stringLiteral) {
-
+            //TODO
         } else if (expr instanceof VarAssignment varAssignment) {
             throw new UnsupportedOperationException(varAssignment.varName + "Varassignment bisher noch nicht unterstützt");
         }
@@ -499,19 +493,16 @@ public class GenAssembly implements Visitor {
     }
 
     private void callLibraryFunction(FunctionCall functionCall) {
-        switch (functionCall.functionName) {
-            case "drucke" -> {
-                functionCall.functionName = "printf";
-                var firstArg = functionCall.args.getFirst();
-                if (firstArg instanceof StringLiteral stringLiteral) {
-                    stringLiteral.s = stringLiteral.s.replace("%d", "%ld");
-                } else {
-                    throw new UnsupportedOperationException("Nur inline Strings können gedruckt werden");
-                }
+        if (functionCall.functionName.equals("drucke")) {
+            functionCall.functionName = "printf";
+            var firstArg = functionCall.args.getFirst();
+            if (firstArg instanceof StringLiteral stringLiteral) {
+                stringLiteral.s = stringLiteral.s.replace("%g", "%ld").replace("%z", "%s");
+            } else {
+                throw new UnsupportedOperationException("Nur inline Strings können gedruckt werden");
             }
-            case "eingabe" -> System.out.println("Eingabe"); //TODO
-            default ->
-                    throw new UnsupportedOperationException("Kenne diese Bibliotheksfunktion nicht");
+        } else {
+            throw new UnsupportedOperationException("Kenne diese Bibliotheksfunktion nicht");
         }
     }
 
@@ -542,18 +533,32 @@ public class GenAssembly implements Visitor {
     }
 
     @Override
+    public void visit(ContinueStatement continueStatement) {
+        nl();
+        write("jmp " + loopConditionStack.peek());
+    }
+
+    @Override
+    public void visit(BreakStatement breakStatement) {
+        nl();
+        write("jmp " + loopEndStack.peek());
+    }
+
+    @Override
     public void visit(IfElseStatement ifElseStatement) {
         var ifEnd = ".L" + next();
         var elseEnd = ".L" + next();
         var elifEnd = ".L" + next();
         ifElseStatement.ifCondition.welcome(this);
         // In rax steht jetzt das Ergebnis
-        // Prüfen, ob null
+        // Prüfen, ob 0
         nl();
         write("cmpq\t$0, %rax");
         nl();
         write("je " + ifEnd);
         ifElseStatement.ifBlock.welcome(this);
+        nl();
+        write("jmp " + elseEnd);
 
         nl();
         if (ifElseStatement.elseifConditions.isEmpty()) {
@@ -585,17 +590,7 @@ public class GenAssembly implements Visitor {
         write("\n" + elseEnd + ":");
     }
 
-    @Override
-    public void visit(ContinueStatement continueStatement) {
-        nl();
-        write("jmp " + loopConditionStack.peek());
-    }
 
-    @Override
-    public void visit(BreakStatement breakStatement) {
-        nl();
-        write("jmp " + loopEndStack.peek());
-    }
 
     @Override
     public void visit(VarAssignment varAssignment) {

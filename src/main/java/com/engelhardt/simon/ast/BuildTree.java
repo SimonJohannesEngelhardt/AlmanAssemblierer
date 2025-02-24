@@ -59,6 +59,14 @@ public class BuildTree extends almanBaseListener {
                     ctx.expr().get(1).result,
                     Operator.div
             );
+        } else if (ctx.MOD() != null) {
+            ctx.result = new OpExpr(
+                    line,
+                    column,
+                    ctx.expr().get(0).result,
+                    ctx.expr().get(1).result,
+                    Operator.mod
+            );
         } else if (ctx.ID() != null) {
             ctx.result = new Variable(
                     line,

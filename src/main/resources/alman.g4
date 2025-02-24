@@ -78,7 +78,7 @@ exprList: expr (COMMA expr)*; // arg list
 zahl returns [ IntLiteral result]: NUMBER;
 string returns [ StringLiteral result]: STRING;
 
-NUMBER : [0-9]+;
+NUMBER : '-'?[0-9]+;
 
 // Liest Strings ein, die von Anführungszeichen umschlossen sind. Erlaubt es auch, Anführungszeichen durch Escapen innerhalb des Strings zu verwenden.
 STRING: '"' (~["\\] | '\\' .)* '"'
@@ -110,8 +110,8 @@ ELSE: 'ansonsten';
 FUNCTION_HEAD: 'definiere';
 RETURN: 'gib zurueck';
 WHILE: 'waehrend'; // oder solange
-BREAK: 'break';
-CONTINUE: 'continue';
+BREAK: 'breche';
+CONTINUE: 'fahre fort';
 LET: 'lasse';
 CONST: 'konstante';
 

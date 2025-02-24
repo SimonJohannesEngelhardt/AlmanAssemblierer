@@ -2,16 +2,14 @@ package com.engelhardt.simon.utils;
 
 public sealed interface Type permits Type.PrimitiveType, Type.ReferenceType {
     String string_type = "Zeichenkette";
-    String long_type = "dezimalzahl";
+    String long_type = "ganzzahl";
     String boolean_type = "wahrheitswert";
-    String double_type = "gleitkommzahl";
     String void_type = "nichts";
 
 
     Type STRING_TYPE = new ReferenceType(string_type, "char *");
     Type LONG_TYPE = new PrimitiveType(long_type, "long");
     Type BOOLEAN_TYPE = new PrimitiveType(boolean_type, "long");
-    Type DOUBLE_TYPE = new PrimitiveType(double_type, "double");
     Type VOID_TYPE = new PrimitiveType(void_type, "void");
 
 
@@ -20,13 +18,13 @@ public sealed interface Type permits Type.PrimitiveType, Type.ReferenceType {
             case string_type -> STRING_TYPE;
             case long_type -> LONG_TYPE;
             case boolean_type -> BOOLEAN_TYPE;
-            case double_type -> DOUBLE_TYPE;
             case void_type -> VOID_TYPE;
             default -> new ReferenceType(name, null);
         };
     }
 
     String name();
+
     String ctype();
 
     boolean isPrimitive();
@@ -37,7 +35,7 @@ public sealed interface Type permits Type.PrimitiveType, Type.ReferenceType {
 
     static boolean isBuildIn(String name) {
         return switch (name) {
-            case "gleitkommazahl", "zeichenkette", "ganzzahl", "wahrheitswert" -> true;
+            case "zeichenkette", "ganzzahl", "wahrheitswert" -> true;
             default -> false;
         };
     }
