@@ -143,7 +143,7 @@ public class PrettyPrinter implements Visitor {
         write("}");
         if (ifElseStatement.elseifBlocks != null && ifElseStatement.elseifConditions != null) {
             if (ifElseStatement.elseifBlocks.size() != ifElseStatement.elseifConditions.size()) {
-                throw new IllegalStateException("Mismatch between number of conditions and blocks");
+                throw new IllegalStateException("Nicht die gleich Anzahl an Bedingungen und Blöcken");
             }
 
             for (int i = 0; i < ifElseStatement.elseifBlocks.size(); i++) {

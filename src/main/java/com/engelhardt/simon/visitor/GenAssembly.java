@@ -209,7 +209,8 @@ public class GenAssembly implements Visitor {
                 nl();
                 write("movzbq\t%al, %rax");
             }
-            default -> throw new UnsupportedOperationException("Operator not supported");
+            default ->
+                    reportError(opExpr.line, opExpr.column, "Nicht unterstützter Operator: " + opExpr.operator);
         }
         if (opExpr.operator.isLogical()) write("\n" + endJmp + ":");
     }
@@ -226,7 +227,7 @@ public class GenAssembly implements Visitor {
             nl();
             write("movq\t_" + global.varName + "(%rip), %rax");
         } else {
-            throw new RuntimeException("Konnte die angegebene Variable nicht finden.");
+            reportError(variable.line, variable.column, "Konnte die angegebene Variable nicht finden.");
         }
     }
 
@@ -325,7 +326,8 @@ public class GenAssembly implements Visitor {
                 || variableDecl.expr instanceof VarAssignment
                 || variableDecl.expr instanceof StringLiteral
                 || variableDecl.expr instanceof BooleanLiteral
-        )) throw new RuntimeException("kann keine VarDecl schreiben");
+        ))
+            reportError(variableDecl.line, variableDecl.column, "kann keine VarDecl schreiben für " + variableDecl.varName);
 
         if (variableDecl.global) {
             generateGlobalVarDecl(variableDecl);
@@ -488,7 +490,7 @@ public class GenAssembly implements Visitor {
         } else {
             var functionDefinition = functions.get(functionCall.functionName);
             if (functionDefinition == null) {
-                reportError(functionCall.line, functionCall.column, functionCall.functionName + "() has no function defined.");
+                reportError(functionCall.line, functionCall.column, functionCall.functionName + "() hat keine Definition");
             }
         }
         int numArgs = functionCall.args.size();
@@ -603,7 +605,7 @@ public class GenAssembly implements Visitor {
         write("\n" + ifEnd + ":");
 
         if (ifElseStatement.elseifConditions.size() != ifElseStatement.elseifBlocks.size()) {
-            throw new RuntimeException("Nicht gleich Anzahl an Conditions und Blöcken");
+            reportError(ifElseStatement.line, ifElseStatement.column, "Nicht die gleich Anzahl an Bedingungen und Blöcken");
         }
         for (int i = 0; i < ifElseStatement.elseifConditions.size(); i++) {
             ifElseStatement.elseifConditions.get(i).welcome(this);
@@ -631,7 +633,7 @@ public class GenAssembly implements Visitor {
         if (env.containsKey(varAssignment.varName)) {
             var locationOnStack = env.get(varAssignment.varName);
             if (locationOnStack == null) {
-                throw new RuntimeException("Konnte " + varAssignment.varName + " nicht finden");
+                reportError(varAssignment.line, varAssignment.column, "Konnte " + varAssignment.varName + " nicht finden");
             }
             nl();
             write("movq\t%rax, " + locationOnStack + "(%rbp)");

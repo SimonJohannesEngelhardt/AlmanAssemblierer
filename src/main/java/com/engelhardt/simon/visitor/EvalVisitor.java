@@ -22,73 +22,74 @@ public class EvalVisitor implements Visitor {
             case mult -> result = l * r;
             case div -> result = l / r;
             case mod -> result = l % r;
-            default -> throw new UnsupportedOperationException("Not supported yet.");
+            default ->
+                    reportError(opExpr.line, opExpr.column, "Nicht unterstützter Operator: " + opExpr.operator);
         }
     }
 
     @Override
     public void visit(Variable variable) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(ReturnStatement returnStatement) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(FunctionDefinition functionDefinition) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(VariableDecl variableDecl) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(Prog prog) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(Block block) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(FunctionCall functionCall) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(WhileStatement whileStatement) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(IfElseStatement ifElseStatement) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(ContinueStatement continueStatement) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(BreakStatement breakStatement) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(VarAssignment varAssignment) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override
     public void visit(StringLiteral stringLiteral) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Nicht unterstützt.");
     }
 
     @Override

@@ -174,7 +174,7 @@ public class BuildTree extends almanBaseListener {
         } else if (ctx.functionCall() != null) {
             ctx.result = ctx.functionCall().result;
         } else {
-            throw new RuntimeException("Unrecognized expression");
+            throw new RuntimeException("Unbekannte Expression");
         }
     }
 
@@ -210,7 +210,7 @@ public class BuildTree extends almanBaseListener {
         } else if (ctx.varAssignment() != null) {
             ctx.result = ctx.varAssignment().result;
         } else {
-            System.err.println("Unrecognized statement");
+            System.err.println("Unbekannter Statement-Typ");
         }
     }
 
@@ -266,7 +266,7 @@ public class BuildTree extends almanBaseListener {
         var isGlobal = ctx.parent.parent.getRuleIndex() == almanParser.RULE_program;
         if (ctx.CONST() != null) {
             if (ctx.expr() == null) {
-                throw new RuntimeException("const declaration must have an assignment.");
+                throw new RuntimeException("Konstante Variablendeklarationen müssen initialisiert werden");
             }
             ctx.result = new VariableDecl(
                     ctx.getStart().getLine(),
@@ -299,7 +299,7 @@ public class BuildTree extends almanBaseListener {
     @Override
     public void exitIfElseStatement(almanParser.IfElseStatementContext ctx) {
         if (ctx.IF() == null) {
-            throw new RuntimeException("If statement must start with 'wenn'");
+            throw new RuntimeException("If-Statement muss mit 'if' beginnen");
         }
         // Creates a copy of the list of expressions in a modifiable list
         List<almanParser.ExprContext> expressions = new ArrayList<>(ctx.expr());

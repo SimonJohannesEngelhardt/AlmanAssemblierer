@@ -49,4 +49,3 @@ antlr/
 *.s
 *.out
 *.dYSM/
-[^.]*

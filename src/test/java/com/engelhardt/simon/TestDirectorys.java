@@ -12,6 +12,7 @@ public class TestDirectorys {
         CompileRunAndTest.testDirectory("operators");
         CompileRunAndTest.testDirectory("boolean");
         CompileRunAndTest.testDirectory("fizzbuzz");
-        CompileRunAndTest.testDirectory("print");
+        CompileRunAndTest.testDirectory("loop");
+        CompileRunAndTest.testDirectory("rightAngledTriangle");
     }
 }

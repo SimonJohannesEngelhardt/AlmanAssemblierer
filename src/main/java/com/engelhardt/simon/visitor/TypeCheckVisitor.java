@@ -37,9 +37,6 @@ public class TypeCheckVisitor implements Visitor {
             env.put(param.name, type);
             param.theType = type;
         }).toList();
-        if (functionDefinition.theType != Type.VOID_TYPE && functionDefinition.block.statements.stream().noneMatch(s -> s instanceof ReturnStatement)) {
-            //TODO reportError(functionDefinition.line, functionDefinition.column, "Ein Wert vom Typ " + functionDefinition.theType.name() + " muss zurückgeben werden.");
-        }
 
         functionDefinition.block.welcome(this);
     }
@@ -63,30 +60,30 @@ public class TypeCheckVisitor implements Visitor {
     public void visit(OpExpr opExpr) {
         opExpr.left.welcome(this);
         if (opExpr.left.theType.equals(Type.STRING_TYPE)) {
-            reportError(opExpr.left.line, opExpr.left.column, "Operations on strings not supported");
+            reportError(opExpr.left.line, opExpr.left.column, "Stringoperationen werden nicht unterstützt.");
             return;
         }
 
         opExpr.right.welcome(this);
         if (opExpr.right.theType.equals(Type.STRING_TYPE)) {
-            reportError(opExpr.right.line, opExpr.right.column, "Operations on strings not supported");
+            reportError(opExpr.right.line, opExpr.right.column, "Stringoperationen werden nicht unterstützt.");
             return;
         }
 
         if (opExpr.operator.isLogical()) {
             opExpr.theType = Type.BOOLEAN_TYPE;
             if (!opExpr.left.theType.equals(Type.BOOLEAN_TYPE) || !opExpr.right.theType.equals(Type.BOOLEAN_TYPE)) {
-                reportError(opExpr.line, opExpr.column, "Wrong type in boolean operand. " + opExpr.left.theType.name() + " != " + opExpr.right.theType.name());
+                reportError(opExpr.line, opExpr.column, "Falscher Typ " + opExpr.left.theType.name() + " != " + Type.BOOLEAN_TYPE + "oder" + opExpr.right.theType.name() + "!=" + Type.BOOLEAN_TYPE);
             }
         } else if (opExpr.operator.isArithmetic()) {
             opExpr.theType = Type.LONG_TYPE;
             if (!opExpr.left.theType.equals(Type.LONG_TYPE) || !opExpr.right.theType.equals(Type.LONG_TYPE)) {
-                reportError(opExpr.line, opExpr.column, "Wrong type in arithmetic operand. " + opExpr.left.theType.name() + " != " + opExpr.right.theType.name());
+                reportError(opExpr.line, opExpr.column, "Falscher Typ " + opExpr.left.theType.name() + " != " + Type.LONG_TYPE + "oder" + opExpr.right.theType.name() + "!=" + Type.LONG_TYPE);
             }
         } else if (opExpr.operator.isComparison()) {
             opExpr.theType = Type.BOOLEAN_TYPE;
             if (!opExpr.left.theType.equals(Type.LONG_TYPE) || !opExpr.right.theType.equals(Type.LONG_TYPE)) {
-                reportError(opExpr.line, opExpr.column, "Wrong type in comparison operand. " + opExpr.left.theType.name() + " != " + opExpr.right.theType.name());
+                reportError(opExpr.line, opExpr.column, "Falscher Typ " + opExpr.left.theType.name() + " != " + Type.LONG_TYPE + "oder" + opExpr.right.theType.name() + "!=" + Type.LONG_TYPE);
             }
         }
     }
@@ -95,7 +92,7 @@ public class TypeCheckVisitor implements Visitor {
     public void visit(Variable var) {
         Type type = env.getOrDefault(var.name, globalVars.getOrDefault(var.name, null));
         if (type == null) {
-            reportError(var.line, var.column, "Unknown variable " + var.name);
+            reportError(var.line, var.column, "Unbekannte Variable: " + var.name);
         } else {
             var.theType = type;
         }
@@ -108,7 +105,7 @@ public class TypeCheckVisitor implements Visitor {
             reportError(
                     returnStatement.line,
                     returnStatement.column,
-                    "Return statement mismatch:\nFunction Type: " + currentFunction.theType.name() + "\nReturn Type: " + returnStatement.expr.theType.name()
+                    "Der falsche Typ wird zurückgeben\n Erwartet:" + currentFunction.theType.name() + "\nTatsächlich: " + returnStatement.expr.theType.name()
 
             );
         }
@@ -149,16 +146,16 @@ public class TypeCheckVisitor implements Visitor {
         if (functionCall.functionName.equals("drucke")) {
             functionCall.theType = Type.VOID_TYPE;
         } else if (function == null) {
-            reportError(functionCall.line, functionCall.column, "Unknown function " + functionCall.functionName);
+            reportError(functionCall.line, functionCall.column, "Unbekannte Funktion " + functionCall.functionName);
         } else if (functionCall.args.size() != function.parameters.size()) {
-            reportError(functionCall.line, functionCall.column, "Function call mismatch. Wrong number of arguments.");
+            reportError(functionCall.line, functionCall.column, "Funktionsaufruffehler: Falsche Anzahl an Argumenten.");
             functionCall.theType = Type.of(function.resultType);
         } else {
             var argsIterator = functionCall.args.iterator();
             for (var param : function.parameters) {
                 var arg = argsIterator.next();
                 if (!arg.theType.equals(Type.of(param.type))) {
-                    reportError(arg.line, arg.column, "Function call mismatch. Wrong type of argument.");
+                    reportError(arg.line, arg.column, "Funktionsaufruffehler: Falscher Typ " + arg.theType.name() + " != " + Type.of(param.type).name());
                 }
             }
             functionCall.theType = Type.of(function.resultType);
