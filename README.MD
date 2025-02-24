@@ -1,5 +1,14 @@
 # Alman Assembliere
 
+## Vorraussetzungen
+
+Java muss installiert sein. Am besten eine neuere Version wie Java 23.
+
+## Installation
+
+`./gradlew` - falls Gradle noch nicht installiert wird, so wird es installiert. Außerdem werden Abhängigkeiten
+heruntergeladen.
+
 ## Notizen
 
 Auf Linux: gcc test1.s -o a.out
